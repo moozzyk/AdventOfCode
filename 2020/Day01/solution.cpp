@@ -50,4 +50,5 @@ int main(int argc, const char *argv[])
   auto numbers = read_numbers("input.txt");
   std::cout << problem1(numbers) << std::endl;
   std::cout << problem2(numbers) << std::endl;
+  return 0;
 }
