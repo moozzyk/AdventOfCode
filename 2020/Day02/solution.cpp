@@ -40,9 +40,19 @@ int problem1(const std::vector<password_line> &lines)
   return std::count_if(lines.begin(), lines.end(), is_valid);
 }
 
+int problem2(const std::vector<password_line> &lines)
+{
+  return std::count_if(lines.begin(), lines.end(), [](const auto &p) {
+    auto l = p.password[p.min_length - 1];
+    auto r = p.password[p.max_length - 1];
+    return l == p.letter ^ r == p.letter;
+  });
+}
+
 int main(int argc, const char *argv[])
 {
   auto lines = read_lines("input.txt");
   std::cout << problem1(lines) << std::endl;
+  std::cout << problem2(lines) << std::endl;
   return 0;
 }
