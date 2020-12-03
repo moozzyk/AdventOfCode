@@ -17,11 +17,10 @@ std::vector<password_line> read_lines(const std::string &file_name)
   file.open(file_name);
   std::string line;
   std::vector<password_line> lines;
-  while (!file.eof())
+  char discard;
+  password_line p;
+  while (file >> p.min_length >> discard >> p.max_length >> p.letter >> discard >> p.password)
   {
-    char discard;
-    password_line p;
-    file >> p.min_length >> discard >> p.max_length >> p.letter >> discard >> p.password;
     lines.push_back(p);
   }
   return lines;
