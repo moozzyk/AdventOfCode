@@ -49,9 +49,21 @@ int problem1(const std::vector<std::string> &lines)
   return max_seat_id;
 }
 
+int problem2(const std::vector<std::string> &lines)
+{
+  std::vector<int> seats;
+  std::transform(lines.begin(), lines.end(), std::back_inserter(seats), find_seat);
+  std::sort(seats.begin(), seats.end());
+  auto seat = std::adjacent_find(seats.begin(), seats.end(), [](const auto i1, const auto i2) {
+    return i2 == i1 + 2;
+  });
+  return *seat + 1;
+}
+
 int main(int argc, const char *argv[])
 {
   auto lines = read_lines("input.txt");
   std::cout << problem1(lines) << std::endl;
+  std::cout << problem2(lines) << std::endl;
   return 0;
 }
