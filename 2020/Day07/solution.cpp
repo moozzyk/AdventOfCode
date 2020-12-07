@@ -7,12 +7,14 @@
 #include <algorithm>
 #include <regex>
 
-std::unordered_map<std::string, std::vector<std::pair<int, std::string>>> read_forms(const std::string &file_name)
+using graph = std::unordered_map<std::string, std::vector<std::pair<int, std::string>>>;
+
+graph read_bags(const std::string &file_name)
 {
   std::ifstream file;
   file.open(file_name);
   std::string line;
-  std::unordered_map<std::string, std::vector<std::pair<int, std::string>>> bags;
+  graph bags;
   while (std::getline(file, line))
   {
     std::string from = line.substr(0, line.find(" bags contain "));
@@ -33,7 +35,6 @@ std::unordered_map<std::string, std::vector<std::pair<int, std::string>>> read_f
   }
   return bags;
 }
-using graph = std::unordered_map<std::string, std::vector<std::pair<int, std::string>>>;
 
 void traverse(const std::string &key, const graph &bags, std::vector<std::string> &path,
               std::unordered_set<std::string> &result)
@@ -67,9 +68,30 @@ int problem1(const graph &bags)
   return result.size();
 }
 
+int count_bags(const std::string &key, const graph &bags)
+{
+  auto nested = bags.at(key);
+  if (nested.empty())
+  {
+    return 0;
+  }
+  int result = 0;
+  for (const auto &item : nested)
+  {
+    result += item.first + item.first * count_bags(item.second, bags);
+  }
+  return result;
+}
+
+int problem2(const graph &bags)
+{
+  return count_bags("shiny gold", bags);
+}
+
 int main(int argc, const char *argv[])
 {
-  auto bags = read_forms("input.txt");
+  auto bags = read_bags("input.txt");
   std::cout << problem1(bags) << std::endl;
+  std::cout << problem2(bags) << std::endl;
   return 0;
 }
