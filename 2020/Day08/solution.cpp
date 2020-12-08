@@ -23,7 +23,7 @@ std::pair<bool, int> execute(const std::vector<instruction>& program) {
   int acc = 0;
   int ip = 0;
   std::unordered_set<int> executed_lines;
-
+  auto x = "0123456789";
   while (true) {
     if (ip >= program.size()) {
       return {true, acc};
