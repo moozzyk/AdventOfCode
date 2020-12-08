@@ -19,14 +19,17 @@ std::vector<instruction> read_program(const std::string& file_name) {
   return program;
 }
 
-int problem1(const std::vector<instruction>& program) {
+std::pair<bool, int> execute(const std::vector<instruction>& program) {
   int acc = 0;
   int ip = 0;
   std::unordered_set<int> executed_lines;
 
   while (true) {
+    if (ip >= program.size()) {
+      return {true, acc};
+    }
     if (executed_lines.find(ip) != executed_lines.end()) {
-      return acc;
+      return {false, acc};
     }
     executed_lines.insert(ip);
     auto [opcode, arg] = program[ip];
@@ -41,9 +44,30 @@ int problem1(const std::vector<instruction>& program) {
   }
 }
 
+int problem1(const std::vector<instruction>& program) {
+  return execute(program).second;
+}
+
+int problem2(std::vector<instruction> program) {
+  for (auto& line : program) {
+    std::string save = line.first;
+    if (line.first == "jmp") {
+      line.first = "nop";
+    } else if (line.first == "nop") {
+      line.first = "jmp";
+    }
+    auto [result, acc] = execute(program);
+    if (result) {
+      return acc;
+    }
+    line.first = save;
+  }
+  throw std::logic_error("Unreachable code.");
+}
+
 int main(int argc, const char* argv[]) {
-  auto bags = read_program("input.txt");
-  std::cout << problem1(bags) << std::endl;
-  // std::cout << problem2(bags) << std::endl;
+  auto program = read_program("input.txt");
+  std::cout << problem1(program) << std::endl;
+  std::cout << problem2(program) << std::endl;
   return 0;
 }
