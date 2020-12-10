@@ -34,8 +34,31 @@ int problem1(const std::vector<int>& n) {
   return ones * threes;
 }
 
+unsigned long problem2(const std::vector<int>& numbers) {
+  std::unordered_set<int> adapters;
+  for (auto n : numbers) {
+    adapters.insert(n);
+  }
+  auto target = *(std::max_element(numbers.begin(), numbers.end()));
+  std::vector<unsigned long> dp(target + 1, 0);
+  dp[0] = 1;
+  for (auto i = 1; i <= target; i++) {
+    if (adapters.find(i) != adapters.end()) {
+      dp[i] = dp[i - 1];
+      if (i > 1) {
+        dp[i] += dp[i - 2];
+      }
+      if (i > 2) {
+        dp[i] += dp[i - 3];
+      }
+    }
+  }
+  return dp.back();
+}
+
 int main(int argc, const char* argv[]) {
   auto numbers = read_numbers("input.txt");
   std::cout << problem1(numbers) << std::endl;
+  std::cout << problem2(numbers) << std::endl;
   return 0;
 }
