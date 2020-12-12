@@ -63,39 +63,25 @@ int problem1(const std::vector<std::string>& lines) {
   return std::abs(x) + std::abs(y);
 }
 
-std::pair<int, int> rotate(int s_x, int s_y, int w_x, int w_y) {
-  int t_w_x = w_x - s_x;
-  int t_w_y = w_y - s_y;
-  auto tmp = t_w_x;
-  t_w_x = t_w_y;
-  t_w_y = -tmp;
-  return {s_x + t_w_x, s_y + t_w_y};
-}
-
 int problem2(const std::vector<std::string>& lines) {
   int w_x = 10, w_y = 1;
   int s_x = 0, s_y = 0;
-  int dx, dy;
 
   for (const auto& l : lines) {
     int n = std::stoi(l.substr(1));
     char prefix = l[0];
     switch (prefix) {
       case 'F':
-        dx = w_x - s_x;
-        dy = w_y - s_y;
-        s_x += n * dx;
-        s_y += n * dy;
-        w_x += n * dx;
-        w_y += n * dy;
+        s_x += n * w_x;
+        s_y += n * w_y;
         break;
       case 'L':
         n = 360 - n;
       case 'R':
         for (int i = 0; i < n / 90; i++) {
-          auto new_pos = rotate(s_x, s_y, w_x, w_y);
-          w_x = new_pos.first;
-          w_y = new_pos.second;
+          int tmp = w_x;
+          w_x = w_y;
+          w_y = -tmp;
         }
         break;
       case 'N':
