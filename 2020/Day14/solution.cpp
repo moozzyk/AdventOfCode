@@ -9,15 +9,14 @@
 #include <vector>
 
 using instruction = std::tuple<std::string, long, long, std::string>;
-using instructions = std::vector<instruction>;
 
-instructions read_input(const std::string& file_name) {
+std::vector<instruction> read_input(const std::string& file_name) {
   std::ifstream file;
   char discard;
   std::string operation, mask;
   long address, value;
   file.open(file_name);
-  instructions result;
+  std::vector<instruction> result;
   while (file >> discard >> discard) {
     if (discard == 'a') {
       operation = "mask";
@@ -33,11 +32,19 @@ instructions read_input(const std::string& file_name) {
   }
   return result;
 }
+long sum_memory(const std::unordered_map<long, long>& memory) {
+  return std::accumulate(
+      memory.begin(),
+      memory.end(),
+      0L,
+      [](long acc, const auto& item) {
+        return acc + item.second;
+      });
+}
 
 long apply_mask(long value, const std::string& mask) {
   std::string value_bin = std::bitset<36>(value).to_string();
   std::string result;
-  // std::cout << value << " " << value_bin << " " << mask << std::endl;
   for (int i = 0; i <= mask.size(); i++) {
     switch (mask[i]) {
       case 'X':
@@ -48,7 +55,6 @@ long apply_mask(long value, const std::string& mask) {
         break;
     }
   }
-  // std::cout << result << " " << std::stol(result, 0, 2) << std::endl;
   return std::stol(result, 0, 2);
 }
 
@@ -62,18 +68,49 @@ long problem1(const std::vector<instruction>& instructions) {
       memory[address] = apply_mask(value, current_mask);
     }
   }
+  return sum_memory(memory);
+}
 
-  return std::accumulate(
-      memory.begin(),
-      memory.end(),
-      0L,
-      [](long acc, const auto& item) {
-        return acc + item.second;
-      });
+void write_to_memory(
+    const std::string& mask, const std::string& address, int idx,
+    long effective_address, long value, std::unordered_map<long, long>& memory) {
+  if (idx == mask.size()) {
+    memory[effective_address] = value;
+    return;
+  }
+  auto bit = 0;
+  switch (mask[idx]) {
+    case '0':
+      bit = static_cast<int>(address[idx] == '1');
+      write_to_memory(mask, address, idx + 1, (effective_address << 1) | bit, value, memory);
+      break;
+    case '1':
+      write_to_memory(mask, address, idx + 1, (effective_address << 1) | 1, value, memory);
+      break;
+    case 'X':
+      write_to_memory(mask, address, idx + 1, (effective_address << 1) | 1, value, memory);
+      write_to_memory(mask, address, idx + 1, (effective_address << 1), value, memory);
+      break;
+  }
+}
+
+long problem2(const std::vector<instruction>& instructions) {
+  std::unordered_map<long, long> memory;
+  std::string current_mask;
+  for (auto& [operation, address, value, mask] : instructions) {
+    if (operation == "mask") {
+      current_mask = mask;
+    } else {
+      auto address_bin = std::bitset<36>(address).to_string();
+      write_to_memory(current_mask, address_bin, 0, 0, value, memory);
+    }
+  }
+  return sum_memory(memory);
 }
 
 int main(int argc, const char* argv[]) {
   auto input = read_input("input.txt");
   std::cout << problem1(input) << std::endl;
+  std::cout << problem2(input) << std::endl;
   return 0;
 }
