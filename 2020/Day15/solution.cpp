@@ -10,23 +10,23 @@
 #include <vector>
 
 int solve(const std::vector<int>& numbers, int max_turn) {
-  std::vector<int> turn_2(max_turn + 1, -1);
-  std::vector<int> turn_1(max_turn + 1, -1);
+  std::vector<int> seen(max_turn + 1, -1);
 
   int turn = 1;
-  for (auto n : numbers) {
-    turn_1[n] = {turn++};
+  for (; turn < numbers.size(); turn++) {
+    seen[numbers[turn - 1]] = turn;
   }
 
   auto last = numbers.back();
-  for (; turn <= max_turn; turn++) {
-    if (turn_2[last] != -1) {
-      last = turn_1[last] - turn_2[last];
-    } else {
+  for (; turn < max_turn; turn++) {
+    if (seen[last] == -1) {
+      seen[last] = turn;
       last = 0;
+    } else {
+      auto d = turn - seen[last];
+      seen[last] = turn;
+      last = d;
     }
-    turn_2[last] = turn_1[last];
-    turn_1[last] = turn;
   }
   return last;
 }
