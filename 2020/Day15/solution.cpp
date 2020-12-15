@@ -10,23 +10,23 @@
 #include <vector>
 
 int solve(const std::vector<int>& numbers, int max_turn) {
-  std::unordered_map<int, std::deque<int>> turns;
+  std::vector<int> turn_2(max_turn + 1, -1);
+  std::vector<int> turn_1(max_turn + 1, -1);
 
   int turn = 1;
   for (auto n : numbers) {
-    turns[n] = {turn++};
+    turn_1[n] = {turn++};
   }
 
   auto last = numbers.back();
   for (; turn <= max_turn; turn++) {
-    auto& prev = turns[last];
-    if (prev.size() > 1) {
-      last = prev.back() - prev.front();
-      prev.pop_front();
+    if (turn_2[last] != -1) {
+      last = turn_1[last] - turn_2[last];
     } else {
       last = 0;
     }
-    turns[last].push_back(turn);
+    turn_2[last] = turn_1[last];
+    turn_1[last] = turn;
   }
   return last;
 }
