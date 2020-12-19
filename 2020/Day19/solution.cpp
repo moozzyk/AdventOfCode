@@ -81,8 +81,17 @@ std::vector<std::string> combine_matches(const std::vector<std::string>& ss1, co
   return result;
 }
 
-std::vector<std::string> expand_rule(const std::unordered_map<int, rule>& rules, rule r) {
+std::vector<std::string> expand_rule(
+    const std::unordered_map<int, rule>& rules,
+    const rule& r,
+    std::unordered_map<int, std::vector<std::string>>& cache) {
+  auto cached_matches = cache.find(r.id);
+  if (cached_matches != cache.end()) {
+    return cached_matches->second;
+  }
+
   if (r.terminal.size() > 0) {
+    cache[r.id] = {r.terminal};
     return {r.terminal};
   }
 
@@ -90,33 +99,39 @@ std::vector<std::string> expand_rule(const std::unordered_map<int, rule>& rules,
   for (const auto& child_rules : r.child_rules) {
     std::vector<std::string> partial_matches;
     for (const auto& rule_id : child_rules) {
-      auto new_matches = expand_rule(rules, rules.at(rule_id));
+      auto new_matches = expand_rule(rules, rules.at(rule_id), cache);
       partial_matches = combine_matches(partial_matches, new_matches);
     }
     matches.insert(matches.end(), partial_matches.begin(), partial_matches.end());
   }
+  cache[r.id] = matches;
   return matches;
 }
 
-int problem1(const std::unordered_map<int, rule>& rules, const std::vector<std::string>& messages) {
-  auto possible_matches = expand_rule(rules, rules.at(0));
+int count_matching_rules(
+    const std::vector<std::string>& expanded_rules,
+    const std::vector<std::string>& messages) {
   std::unordered_set<std::string> set;
-  for (const auto& s : possible_matches) {
+  for (const auto& s : expanded_rules) {
     set.insert(s);
   }
+  return std::count_if(
+      messages.begin(),
+      messages.end(),
+      [&set](const auto& m) { return set.find(m) != set.end(); });
+}
 
-  auto result = 0;
-  for (const auto& m : messages) {
-    if (set.find(m) != set.end()) {
-      result++;
-    }
-  }
-  return result;
+int problem1(
+    const std::unordered_map<int, std::vector<std::string>>& expanded_rules,
+    const std::vector<std::string>& messages) {
+  return count_matching_rules(expanded_rules.at(0), messages);
 }
 
 int main(int argc, const char* argv[]) {
   auto rules = read_rules("rules.txt");
   auto messages = read_messages("messages.txt");
-  std::cout << problem1(rules, messages) << std::endl;
+  std::unordered_map<int, std::vector<std::string>> expanded_rules;
+  expand_rule(rules, rules.at(0), expanded_rules);
+  std::cout << problem1(expanded_rules, messages) << std::endl;
   return 0;
 }
