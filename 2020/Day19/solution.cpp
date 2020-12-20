@@ -108,30 +108,124 @@ std::vector<std::string> expand_rule(
   return matches;
 }
 
-int count_matching_rules(
-    const std::vector<std::string>& expanded_rules,
-    const std::vector<std::string>& messages) {
-  std::unordered_set<std::string> set;
-  for (const auto& s : expanded_rules) {
-    set.insert(s);
+size_t match(
+    const std::string& message,
+    size_t index,
+    const rule& current_rule,
+    const std::unordered_map<int, rule>& rules) {
+  if (index >= message.size()) {
+    return std::string::npos;
+  }
+  if (current_rule.terminal != "") {
+    if (message[index] == current_rule.terminal[0]) {
+      return index + 1;
+    }
+    return std::string::npos;
+  }
+
+  for (const auto& child_rules : current_rule.child_rules) {
+    int new_idx = index;
+    for (const auto& child_rule : child_rules) {
+      new_idx = match(message, new_idx, rules.at(child_rule), rules);
+    }
+    if (new_idx != std::string::npos) {
+      return new_idx;
+    }
+  }
+
+  return std::string::npos;
+}
+
+int problem1(const std::vector<std::string>& messages, const std::unordered_map<int, rule>& rules) {
+  return std::count_if(
+      messages.begin(),
+      messages.end(),
+      [&](const auto& m) { return match(m, 0, rules.at(0), rules) == m.size(); });
+}
+
+bool starts_with(const std::string& s, const std::string& prefix) {
+  return s.rfind(prefix, 0) == 0;
+}
+bool ends_with(const std::string& s, const std::string& suffix) {
+  return s.size() >= suffix.size() &&
+         s.compare(s.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+std::pair<int, int> extract_match(
+    const std::string& m,
+    const std::vector<std::string>& prefixes,
+    const std::vector<std::string>& suffixes) {
+  for (const auto& p : prefixes) {
+    for (const auto& s : suffixes) {
+      if (p.size() + s.size() <= m.size() && starts_with(m, p) && ends_with(m, s)) {
+        return {p.size(), m.size() - s.size()};
+      }
+    }
+  }
+  return {std::string::npos, std::string::npos};
+}
+
+bool match_special_11(
+    const std::string& m,
+    const std::unordered_map<int, std::vector<std::string>>& expanded_rules) {
+  const auto& prefixes = expanded_rules.at(42);
+  const auto& suffixes = expanded_rules.at(31);
+  auto range = extract_match(m, prefixes, suffixes);
+  if (range.first == std::string::npos) {
+    return false;
+  }
+  auto partial = m.substr(range.first, range.second - range.first);
+  if (partial == "") {
+    return true;
+  }
+  return match_special_11(partial, expanded_rules);
+}
+
+std::pair<int, int> match_special_8(
+    const std::string& m,
+    const std::unordered_map<int, std::vector<std::string>>& expanded_rules) {
+  const auto& prefixes = expanded_rules.at(42);
+  return extract_match(m, prefixes, {""});
+}
+
+bool match_special_0(
+    std::string m,
+    const std::unordered_map<int, std::vector<std::string>>& expanded_rules) {
+  while (m.size() > 0) {
+    auto range = match_special_8(m, expanded_rules);
+    if (range.first == std::string::npos) {
+      return false;
+    }
+    m = m.substr(range.first, range.second - range.first);
+    if (match_special_11(m, expanded_rules)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+int problem2(
+    const std::vector<std::string>& messages,
+    const std::unordered_map<int, rule>& rules) {
+  std::unordered_map<int, std::vector<std::string>> expanded_rules;
+  expand_rule(rules, rules.at(0), expanded_rules);
+
+  int num_matching = 0;
+  for (const auto& m : messages) {
+    if (match_special_0(m, expanded_rules)) {
+      num_matching++;
+    }
   }
   return std::count_if(
       messages.begin(),
       messages.end(),
-      [&set](const auto& m) { return set.find(m) != set.end(); });
-}
-
-int problem1(
-    const std::unordered_map<int, std::vector<std::string>>& expanded_rules,
-    const std::vector<std::string>& messages) {
-  return count_matching_rules(expanded_rules.at(0), messages);
+      [&expanded_rules](const auto& m) { return match_special_0(m, expanded_rules); });
 }
 
 int main(int argc, const char* argv[]) {
   auto rules = read_rules("rules.txt");
   auto messages = read_messages("messages.txt");
-  std::unordered_map<int, std::vector<std::string>> expanded_rules;
-  expand_rule(rules, rules.at(0), expanded_rules);
-  std::cout << problem1(expanded_rules, messages) << std::endl;
+  std::cout << problem1(messages, rules) << std::endl;
+  std::cout << problem2(messages, rules) << std::endl;
   return 0;
 }
