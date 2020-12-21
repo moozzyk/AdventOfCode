@@ -110,9 +110,41 @@ int problem1(
   return result;
 }
 
+std::string problem2(std::map<std::string, std::vector<std::string>> food_map) {
+  std::unordered_set<std::string> used;
+  for (auto i = 0; i < food_map.size(); i++) {
+    std::string food_to_remove;
+    for (auto& [allergen, food_items] : food_map) {
+      if (food_items.size() == 1 && used.find(food_items[0]) == used.end()) {
+        food_to_remove = food_items.front();
+        used.insert(food_to_remove);
+        break;
+      }
+    }
+    for (auto it = food_map.begin(); it != food_map.end(); it++) {
+      if (it->second.size() != 1) {
+        auto pos = std::find(it->second.begin(), it->second.end(), food_to_remove);
+        if (pos != it->second.end()) {
+          it->second.erase(pos);
+        }
+      }
+    }
+  }
+
+  std::stringstream ss;
+  for (auto it = food_map.begin(); it != food_map.end(); it++) {
+    if (it != food_map.begin()) {
+      ss << ",";
+    }
+    ss << it->second[0];
+  }
+  return ss.str();
+}
+
 int main(int argc, const char* argv[]) {
   auto food_info = read_food_info("input.txt");
   const auto [food_map, good_food_candidates] = build_food_map(food_info);
   std::cout << problem1(food_info, food_map, good_food_candidates) << std::endl;
+  std::cout << problem2(food_map) << std::endl;
   return 0;
 }
