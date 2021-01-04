@@ -1,0 +1,1 @@
+Can it be done without enumerating all the permutations?

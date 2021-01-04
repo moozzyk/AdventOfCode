@@ -1,0 +1,3 @@
+The code to generate combinations is messy.
+A check for concurrent recharges is missing.
+To solve Problem2 uncomment code in line 95

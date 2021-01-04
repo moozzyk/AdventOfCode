@@ -1,0 +1,1 @@
+class Instruction(val Code: String, val Register: String, val Offset: Int)

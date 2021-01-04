@@ -1,0 +1,2 @@
+Problem1 - one pass should be enough
+Problem2 - answer found accidently. Analysis - https://www.reddit.com/r/adventofcode/comments/3xflz8/day_19_solutions/cy4etju
