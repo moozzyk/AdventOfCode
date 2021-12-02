@@ -1,5 +1,4 @@
 import System.IO
-import Data.List
 
 main = do
     raw <- readFile "input.txt"
