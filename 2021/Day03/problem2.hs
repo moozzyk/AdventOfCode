@@ -11,9 +11,11 @@ main = do
     let co2 = findWithPrefix input "" leastCommon
     print (toDec(oxygen) * toDec(co2))
 
+-- https://stackoverflow.com/a/26961027/1168070
 toDec :: String -> Int
 toDec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
 
+-- https://www.reddit.com/r/haskell/comments/7u1gay/comment/dtgw1ay
 mostCommon :: String -> Char
 mostCommon s = head $ maximumBy (compare `on` length) $ group $ sort s
 
