@@ -1,29 +1,27 @@
 import System.IO
 import Data.List
+import Debug.Trace
 
 main = do
     raw <- readFile "input.txt"
     let input = lines raw
     let coords = map parseLine input
-    print $ problem coords
+    let p1 = problem $ filter (\((x1, y1), (x2, y2)) -> x1 == x2 || y1 == y2) coords
+    let p2 = problem coords
+    print p1
+    print p2
 
 problem coords =
     length $ filter (\s -> length s /= 1) $ group $ sort $
-    concat $ map linePoints $ filter (\((x1, y1), (x2, y2)) -> x1 == x2 || y1 == y2) coords
+    concat $ map linePoints coords
 
 linePoints ((x1, y1),(x2, y2)) =
-    if x1 == x2 && y1 == y2 then [(x1, y1)]
-    else if x1 == x2 then
-        if y2 > y1 then
-            (x1, y1):linePoints((x1, y1 + 1), (x2, y2))
-        else
-            (x1, y1):linePoints((x1, y1 - 1), (x2, y2))
-    else if y1 == y2 then
-        if x2 > x1 then
-            (x1, y1):linePoints((x1 + 1, y1), (x2, y2))
-        else
-            (x1, y1):linePoints((x1 - 1, y1), (x2, y2))
-    else []
+    let
+        dx = if x1 < x2 then 1 else if x1 > x2 then -1 else 0
+        dy = if y1 < y2 then 1 else if y1 > y2 then -1 else 0
+    in
+        if x1 == x2 && y1 == y2 then [(x1, y1)]
+        else (x1, y1):linePoints ((x1 + dx, y1 + dy), (x2, y2))
 
 parseLine :: String -> ((Int, Int), (Int, Int))
 parseLine l =
