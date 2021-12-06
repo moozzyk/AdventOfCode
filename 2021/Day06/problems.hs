@@ -7,10 +7,15 @@ main = do
     let numbers = parseInput raw
     let school = take 9 $ [0] ++ (map (\i -> length i) $ group $ sort numbers) ++ [0,0,0,0,0,0,0,0]
     print $ problem1 school
+    print $ problem2 school
 
 problem1 :: [Int] -> Int
 problem1 school =
     run school 80
+
+problem2 :: [Int] -> Int
+problem2 school =
+    run school 256
 
 run :: [Int] -> Int -> Int
 run school days =
