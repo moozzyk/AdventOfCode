@@ -9,6 +9,7 @@ main = do
     raw <- readFile "input.txt"
     let grid = M.fromList  $ parseInput $ lines raw
     print $ problem1 grid
+    print $ problem2 grid
 
 parseInput :: [String] -> [((Int, Int), Int)]
 parseInput ls =
@@ -22,6 +23,18 @@ problem1 grid =
 flashN :: Int -> M.Map (Int, Int) Int -> [M.Map (Int, Int) Int]
 flashN n grid =
     foldr (\i g -> (flashCycle $ head g):g) [grid] [1..n]
+
+problem2 :: M.Map (Int, Int) Int -> Int
+problem2 grid = flashUntilSynchronized grid
+
+flashUntilSynchronized :: M.Map (Int, Int) Int -> Int
+flashUntilSynchronized grid =
+    let
+        grid' = flashCycle grid
+    in
+        if count0s grid' == 100
+            then 1
+            else 1 + flashUntilSynchronized grid'
 
 count0s :: M.Map (Int, Int) Int -> Int
 count0s grid =
