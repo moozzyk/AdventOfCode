@@ -3,17 +3,24 @@ import Debug.Trace
 
 main = do
     let area = ((14, 50), (-225, -267))
-    print $ problem1 area
+    -- let area = ((20, 30), (-5, -10))
+    let validRoutes = getValidRoutes area
+    print $ problem1 validRoutes
+    print $ problem2 validRoutes
 
-problem1 :: ((Int, Int), (Int, Int)) -> Int
-problem1 ((x1, x2), (y1, y2)) =
+getValidRoutes ((x1, x2), (y1, y2)) =
     let
         candidates = [(dx, dy) | dx <- [0..(max x1 x2)],
-                                 dy <- [0..(max (abs y1) (abs y2))]]
+                                 dy <- [(min y1 y2)..(max (abs y1) (abs y2))]]
         routes = map (\vel -> simulate (0, 0) vel y2) candidates
-        valid = filter (\p -> anyHit p ((x1, x2), (y1, y2))) routes
     in
-        maximum $ map snd $ concat $ valid
+        filter (\p -> anyHit p ((x1, x2), (y1, y2))) routes
+
+problem1 :: [[(Int, Int)]] -> Int
+problem1 routes = maximum $ map snd $ concat $ routes
+
+problem2 :: [[(Int, Int)]] -> Int
+problem2 routes = length routes
 
 simulate :: (Int, Int) -> (Int, Int) -> Int -> [(Int, Int)]
 simulate (x, y) (dx, dy) minY
