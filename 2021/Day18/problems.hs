@@ -6,9 +6,14 @@ main = do
     raw <- readFile "input.txt"
     let ls = lines raw
     print $ problem1 ls
+    print $ problem2 ls
 
 problem1 :: [String] -> Int
 problem1 ls = magnitude $ foldl (\res n -> addNumbers res n) (head ls) (tail ls)
+
+problem2 :: [String] -> Int
+problem2 ls =
+    maximum $ map magnitude $ map (\(n1, n2) -> addNumbers n1 n2) $ [(x,y) | x<-ls, y<-ls]
 
 magnitude :: String -> Int
 magnitude (i:n) =
