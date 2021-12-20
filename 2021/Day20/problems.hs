@@ -4,19 +4,31 @@ import qualified Data.Map as M
 main = do
     raw <- readFile "input.txt"
     let algo = head $ lines raw
-    let img = parseImage $ drop 2 $ lines raw
-    print $ problem1 algo (img, '.')
+    let img = (parseImage $ drop 2 $ lines raw, '.')
+    print $ problem1 algo img
+    print $ problem2 algo img
 
 parseImage :: [String] -> M.Map (Int, Int) Char
 parseImage ls =
     M.fromList $ zip ([(x, y) | y <- [0..(length ls) - 1],
                                 x <- [0..(length $ head ls) - 1]]) (concat ls)
+
 problem1 :: String -> (M.Map (Int,Int) Char, Char) -> Int
-problem1 algo img =
+problem1 algo img = countPixelsAfterTransformN 2 algo img
+
+problem2 :: String -> (M.Map (Int,Int) Char, Char) -> Int
+problem2 algo img = countPixelsAfterTransformN 50 algo img
+
+countPixelsAfterTransformN :: Int -> String -> (M.Map (Int,Int) Char, Char) -> Int
+countPixelsAfterTransformN n algo img =
     let
-        (pixelMap, _) = transform algo $ transform algo img
+        (pixelMap, _) = transformN n algo img
     in
         length $ filter (== '#') $ M.elems pixelMap
+
+transformN :: Int -> String -> (M.Map (Int,Int) Char, Char) -> (M.Map (Int,Int) Char, Char)
+transformN n algo img =
+    foldr (\_ i -> transform algo i) img [1..n]
 
 transform :: String -> (M.Map (Int,Int) Char, Char) -> (M.Map (Int,Int) Char, Char)
 transform algo (img, def) =
