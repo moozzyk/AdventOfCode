@@ -5,14 +5,16 @@ import Debug.Trace
 
 data Packet = Packet { version :: Int
                      , typeId :: Int
-                     , value :: String
+                     , value :: Int
                      , subpackets :: [Packet]
                      } deriving (Show)
 
 main = do
     s <- readFile "input.txt"
     let (packet, _) = parsePacket $ hexStrToBitStr s
+    print packet
     print $ problem1 packet
+    print $ problem2 packet
 
 problem1 :: Packet -> Int
 problem1 packet = calculateVersionSum [packet]
@@ -21,6 +23,39 @@ calculateVersionSum :: [Packet] -> Int
 calculateVersionSum [] = 0
 calculateVersionSum packets =
     sum $ map (\p -> version p + (calculateVersionSum $ subpackets p)) packets
+
+problem2 :: Packet -> Int
+problem2 packet = evaluatePacketExpression packet
+
+evaluatePacketExpression :: Packet -> Int
+evaluatePacketExpression packet
+    | typeId packet == 4 = value packet
+    | otherwise          = evaluatePacketExpression' (typeId packet) (subpackets packet)
+
+evaluatePacketExpression' :: Int -> [Packet] -> Int
+evaluatePacketExpression' 0 packets =
+    sum $ map (evaluatePacketExpression) packets
+
+evaluatePacketExpression' 1 packets =
+    foldr (*) 1 $ map (evaluatePacketExpression) packets
+
+evaluatePacketExpression' 2 packets =
+    minimum $ map (evaluatePacketExpression) packets
+
+evaluatePacketExpression' 3 packets =
+    maximum $ map (evaluatePacketExpression) packets
+
+evaluatePacketExpression' typeId packets =
+    let
+        left = evaluatePacketExpression $ head packets
+        right = evaluatePacketExpression $ last packets
+    in
+        binaryOp typeId left right
+
+binaryOp :: Int -> Int -> Int
+binaryOp 5 left right = if left > right then 1 else 0
+binaryOp 6 left right = if left < right then 1 else 0
+binaryOp 7 left right = if left == right then 1 else 0
 
 parsePacket :: String -> (Packet, String)
 parsePacket s =
@@ -45,7 +80,7 @@ parseOperatorPacket version typeId (lengthTypeId:rest)=
     let
         (subpackets, rest') = parseSubPackets lengthTypeId rest
     in
-        ((Packet version typeId "" subpackets), rest')
+        ((Packet version typeId 0 subpackets), rest')
 
 parseSubPackets :: Char -> String -> ([Packet], String)
 parseSubPackets '1' rest =
@@ -77,10 +112,17 @@ expandPacketList (packets, rest) =
     in
         (packets ++ [subpacket], rest')
 
-parseVarInt :: String -> (String, String)
-parseVarInt ('0':xs) = (take 4 xs, drop 4 xs)
-parseVarInt ('1':xs) =
-    let (rest, s) = parseVarInt (drop 4 xs)
+parseVarInt :: String -> (Int, String)
+parseVarInt xs =
+    let
+        (value, rest) = parseVarInt' xs
+    in
+       (bitStrToNumber value, rest)
+
+parseVarInt' :: String -> (String, String)
+parseVarInt' ('0':xs) = (take 4 xs, drop 4 xs)
+parseVarInt' ('1':xs) =
+    let (rest, s) = parseVarInt' (drop 4 xs)
     in ((take 4 xs) ++ rest, s)
 
 bitStrToNumber :: [Char] -> Int
