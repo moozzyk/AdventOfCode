@@ -134,7 +134,7 @@ std::unordered_map<position_key, std::vector<std::pair<int, int> >, position_has
     return moves;
 }
 
-int getDistance(int x1, int y1, int x2, int y2, const diagram &d)
+int getDistanceBFS(int x1, int y1, int x2, int y2, const diagram &d)
 {
     std::queue<std::tuple<int, int, int> > q;
     std::unordered_set<position_key, position_hash> visited;
@@ -157,6 +157,52 @@ int getDistance(int x1, int y1, int x2, int y2, const diagram &d)
     }
 
     return -1;
+}
+
+int getDistance(int x1, int y1, int x2, int y2, const diagram &d)
+{
+    // if not in the hallway
+    int distance = 0;
+    for (int y = y1 - 1; y >= 1; y--, distance++)
+    {
+        if (d[y][x1] != '.')
+        {
+            return -1;
+        }
+    }
+
+    if (x1 < x2)
+    {
+        for (int x = x1 + 1; x <= x2; x++, distance++)
+        {
+            if (d[1][x] != '.')
+            {
+                return -1;
+            }
+        }
+    }
+    else
+    {
+        for (int x = x1 - 1; x >= x2; x--, distance++)
+        {
+            if (d[1][x] != '.')
+            {
+                return -1;
+            }
+        }
+    }
+
+    for (int y = 2; y <= y2; y++, distance++)
+    {
+        if (d[y][x2] != '.')
+        {
+            return -1;
+        }
+    }
+
+    // std::cout << x1 << " " << y1 << " "
+    //           << x2 << " " << y2 << " dist: " << distance << std::endl;
+    return distance;
 }
 
 bool moveCost(int x1, int y1, int x2, int y2, const diagram &d, int &cost)
