@@ -6,42 +6,64 @@ import Debug.Trace
 
 data OpCode = Inp | Add | Mul | Div | Mod | Eql deriving (Show, Enum, Eq)
 
+{-
+Each chunk of the program does more or less this. We want to divide if possible (i.e. if A == 26)
+z1 = z / A  ; (A = 1 || A = 26)
+if (z % 26 + B != w)
+    z = z1 * 26 + w + C
+else
+    z1
+-}
+
 main = do
     raw <- readFile "input.txt"
     let program = parseInput $ lines raw
-    print $ run 0 [] [
-        (1, 13, 3),
-        (1, 11, 12),
-        (1, 15, 9),
-        (26, -6, 12),
-        (1, 15, 2),
-        (26, -8, 1),
-        (26, -4, 1),
-        (1, 15, 13),
-        (1, 10, 1),
-        (1, 11, 6),
-        (26, -11, 2),
-        (26, 0, 11),
-        (26, -8, 10),
-        (26, -7, 3)]
+    -- (A, B, C) manually extracted from program
+    let coeffs =    [
+                        (1, 13, 3),
+                        (1, 11, 12),
+                        (1, 15, 9),
+                        (26, -6, 12),
+                        (1, 15, 2),
+                        (26, -8, 1),
+                        (26, -4, 1),
+                        (1, 15, 13),
+                        (1, 10, 1),
+                        (1, 11, 6),
+                        (26, -11, 2),
+                        (26, 0, 11),
+                        (26, -8, 10),
+                        (26, -7, 3)
+                    ]
+    print $ problem1 coeffs
+    print $ problem2 coeffs
 
 problem1 :: [(Int, Int, Int)] -> String
-problem1 coeffs = fromJust $ run 0 [] coeffs
+problem1 coeffs = fromJust $ findModelNumber 0 [] coeffs [9,8..1]
 
-run :: Int -> [Int] -> [(Int, Int, Int)] -> Maybe String
-run z n []
+problem2 :: [(Int, Int, Int)] -> String
+problem2 coeffs = fromJust $ findModelNumber 0 [] coeffs [1..9]
+
+findModelNumber :: Int -> [Int] -> [(Int, Int, Int)] -> [Int] -> Maybe String
+findModelNumber z n [] _
     | z == 0    = Just $ concat $ map (show) $ reverse n
     | otherwise = Nothing
 
-run z n ((1, _, c):rest) =
+findModelNumber z n ((1, _, c):rest) i =
     let
-        eval = dropWhile (== Nothing) $ map (\w -> run (z * 26 + w + c) (w:n) rest) [9,8..1]
+        f = map (\w -> findModelNumber (z * 26 + w + c) (w:n) rest i)
     in
-        if eval == [] then Nothing else head $ eval
+        findModelNumberHelper f i
 
-run z n ((26, b, _):rest) =
+findModelNumber z n ((26, b, _):rest) i =
     let
-        eval = dropWhile (== Nothing) $ map (\w -> if z `mod` 26 + b == w then run (z `div` 26) (w:n) rest else Nothing) [9,8..1]
+        f = map (\w -> if z `mod` 26 + b == w then findModelNumber (z `div` 26) (w:n) rest i else Nothing)
+    in
+        findModelNumberHelper f i
+
+findModelNumberHelper f i =
+    let
+        eval = dropWhile (== Nothing) $ f i
     in
         if eval == [] then Nothing else head $ eval
 
