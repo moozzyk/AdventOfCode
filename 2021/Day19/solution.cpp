@@ -154,10 +154,11 @@ std::vector<Coordinates> findCommonBeacons(Beacons b1, Beacons b2)
     return result;
 }
 
-Beacons findBestTransposition(const Beacons &b1, const Beacons &b2, int &overlap)
+std::pair<Beacons, Coordinates> findBestTransposition(const Beacons &b1, const Beacons &b2, int &overlap)
 {
     overlap = 0;
     Beacons bestChoice;
+    Coordinates bestChoiceDelta;
     for (const auto &startBeacon : b1)
     {
         Beacons newB2;
@@ -175,14 +176,14 @@ Beacons findBestTransposition(const Beacons &b1, const Beacons &b2, int &overlap
             {
                 overlap = commonBeacons.size();
                 bestChoice = newB2;
+                bestChoiceDelta = delta;
             }
         }
     }
-
-    return bestChoice;
+    return {bestChoice, bestChoiceDelta};
 }
 
-std::vector<Beacons> getMapFragments(const std::vector<Beacons> &input)
+std::pair<std::vector<Beacons>, std::vector<Coordinates>> getMapFragments(const std::vector<Beacons> &input)
 {
     std::vector<std::vector<Beacons>> transpositions{input.size()};
     for (int i = 1; i < input.size(); i++)
@@ -192,6 +193,8 @@ std::vector<Beacons> getMapFragments(const std::vector<Beacons> &input)
 
     std::vector<Beacons> fragments{input.size()};
     fragments[0] = input[0];
+    std::vector<Coordinates> scannerPositions{input.size()};
+    scannerPositions[0] = Coordinates{0, 0, 0};
     for (int i = 0; i < fragments.size(); i++)
     {
         for (int fragIdx = 0; fragIdx < fragments.size(); fragIdx++)
@@ -211,17 +214,19 @@ std::vector<Beacons> getMapFragments(const std::vector<Beacons> &input)
                 for (const auto &transposition : transpositions[candidate])
                 {
                     int overlap;
-                    auto r = findBestTransposition(fragments[fragIdx], transposition, overlap);
+                    const auto &[r, pos] = findBestTransposition(fragments[fragIdx], transposition, overlap);
                     if (overlap >= 12)
                     {
                         fragments[candidate] = r;
+                        scannerPositions[candidate] = pos;
                         break;
                     }
                 }
             }
         }
     }
-    return fragments;
+
+    return {fragments, scannerPositions};
 }
 
 int problem1(const std::vector<Beacons> &fragments)
@@ -237,9 +242,27 @@ int problem1(const std::vector<Beacons> &fragments)
     return map.size();
 }
 
+int problem2(const std::vector<Coordinates> &scannerPositions)
+{
+    int maxDist = 0;
+    for (int i = 0; i < scannerPositions.size(); i++)
+    {
+        for (int j = i + 1; j < scannerPositions.size(); j++)
+        {
+            int dist =
+                std::abs(scannerPositions[i].x - scannerPositions[j].x) +
+                std::abs(scannerPositions[i].y - scannerPositions[j].y) +
+                std::abs(scannerPositions[i].z - scannerPositions[j].z);
+            maxDist = std::max(dist, maxDist);
+        }
+    }
+    return maxDist;
+}
+
 int main(int argc, const char *argv[])
 {
     auto input = read_input("input.txt");
-    auto mapFragments = getMapFragments(input);
+    const auto &[mapFragments, scannerPositions] = getMapFragments(input);
     std::cout << "Problem 1: " << problem1(mapFragments) << std::endl;
+    std::cout << "Problem 2: " << problem2(scannerPositions) << std::endl;
 }
