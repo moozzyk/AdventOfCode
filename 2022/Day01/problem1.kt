@@ -5,6 +5,7 @@ fun main() {
     val lines = File("input.txt").readLines()
     val caloriesSorted = getCaloriesSorted(lines)
     println(caloriesSorted[0])
+    println(caloriesSorted.take(3).sum())
 }
 
 fun getCaloriesSorted(lines: List<String>): List<Int> {
