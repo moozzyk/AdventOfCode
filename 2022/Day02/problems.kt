@@ -1,5 +1,4 @@
 import java.io.File
-import kotlin.math.*
 
 fun main(args: Array<String>) {
     val lines = File(args[0]).readLines()
