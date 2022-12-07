@@ -10,6 +10,7 @@ fun main(args: Array<String>) {
     val lines = File(args[0]).readLines()
     val fs = buildFS(lines)
     println(problem1(fs))
+    println(problem2(fs))
 }
 
 fun buildFS(commands: List<String>): Node {
@@ -63,6 +64,21 @@ fun problem1(node: Node): Int {
     for (child in node.childNodes.filter { it.isDir() }) {
         size += problem1(child)
     }
-
     return size
+}
+
+fun dirToDelete(node: Node, spaceToFree: Int, bestCandidate: Node): Node {
+    var candidate =
+            if (node.size > spaceToFree && node.size < bestCandidate.size) node else bestCandidate
+    for (child in node.childNodes.filter { it.isDir() }) {
+        candidate = dirToDelete(child, spaceToFree, candidate)
+    }
+    return candidate
+}
+
+fun problem2(node: Node): Int {
+    val freeSpace = 70000000 - node.size
+    val spaceToFree = 30000000 - freeSpace
+    val dir = dirToDelete(node, spaceToFree, node)
+    return dir.size
 }
