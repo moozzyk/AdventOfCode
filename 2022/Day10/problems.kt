@@ -47,7 +47,7 @@ fun problem1(program: List<String>): Int {
 
 fun problem2(program: List<String>) {
     val cpu = CPU(program)
-    var screen = mutableListOf<Char>()
+    var screen = mutableListOf('#')
     while (cpu.cycle()) {
         val pixel = (cpu.totalCycles - 1) % 40
         screen.add(if (cpu.x >= pixel - 1 && cpu.x <= pixel + 1) '#' else ' ')
