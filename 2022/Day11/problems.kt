@@ -2,7 +2,7 @@ import java.io.File
 import java.util.ArrayDeque
 
 class Monkey(
-        var items: ArrayDeque<Int>,
+        var items: ArrayDeque<Long>,
         val operation: Char,
         val operand: String,
         val divisor: Int,
@@ -11,17 +11,17 @@ class Monkey(
 ) {
     var timesInspected = 0
 
-    fun getItem(): Int {
+    fun getItem(): Long {
         timesInspected++
         return items.removeFirst()
     }
 
-    fun computeNewWorryLevel(oldVal: Int): Int {
+    fun computeNewWorryLevel(oldVal: Long): Long {
         val value =
                 if (operand == "old") {
                     oldVal
                 } else {
-                    operand.toInt()
+                    operand.toLong()
                 }
 
         return if (operation == '*') {
@@ -31,8 +31,8 @@ class Monkey(
         }
     }
 
-    fun nextMonkey(worryLevel: Int): Int {
-        return if (worryLevel % divisor == 0) {
+    fun nextMonkey(worryLevel: Long): Int {
+        return if (worryLevel % divisor == 0L) {
             targetIfTrue
         } else {
             targetIfFalse
@@ -42,13 +42,13 @@ class Monkey(
 
 fun main(args: Array<String>) {
     val lines = File(args[0]).readLines()
-    val monkeys = lines.windowed(7, 7).map { parse(it) }
-    println(problem1(monkeys))
+    println(problem1(lines.windowed(7, 7).map { parse(it) }))
+    println(problem2(lines.windowed(7, 7).map { parse(it) }))
 }
 
 fun parse(lines: List<String>): Monkey {
     val regex = """(\d+)""".toRegex()
-    val items = regex.findAll(lines[1]).map { it.value.toInt() }
+    val items = regex.findAll(lines[1]).map { it.value.toLong() }
     val (operation, operand) = """old (.) (old|\d+)""".toRegex().find(lines[2])!!.destructured
     val (divisor) = regex.find(lines[3])!!.destructured
     val (targetIfTrue) = regex.find(lines[4])!!.destructured
@@ -63,20 +63,24 @@ fun parse(lines: List<String>): Monkey {
     )
 }
 
-fun problem1(monkeys: List<Monkey>): Int {
-    for (i in 1..20) {
+fun solve(monkeys: List<Monkey>, rounds: Int, reductionFactor: Int): Long {
+    val mod = monkeys.map { it.divisor }.reduce { a, e -> a * e }
+    for (i in 1..rounds) {
         for (m in monkeys) {
             while (!m.items.isEmpty()) {
                 var worryLevel = m.getItem()
-                worryLevel = m.computeNewWorryLevel(worryLevel) / 3
+                worryLevel = (m.computeNewWorryLevel(worryLevel) / reductionFactor) % mod
                 val targetMonkey = m.nextMonkey(worryLevel)
                 monkeys[targetMonkey].items.addLast(worryLevel)
             }
         }
-        // println("round: ${i}")
-        // monkeys.forEach { println(it.items.toList()) }
     }
 
-    var topInspected = monkeys.map { it.timesInspected }.sortedDescending().take(2)
+    println(monkeys.map { it.timesInspected.toLong() })
+    var topInspected = monkeys.map { it.timesInspected.toLong() }.sortedDescending().take(2)
     return topInspected.reduce { acc, el -> acc * el }
 }
+
+fun problem1(monkeys: List<Monkey>): Long = solve(monkeys, 20, 3)
+
+fun problem2(monkeys: List<Monkey>): Long = solve(monkeys, 10000, 1)
