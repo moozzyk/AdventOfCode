@@ -7,7 +7,7 @@ data class Position(val row: Int, val col: Int) {}
 fun main(args: Array<String>) {
     val lines = File(args[0]).readLines()
     println(problem1(lines.map { it.toCharArray() }))
-    // println(problem2(lines))
+    println(problem2(lines.map { it.toCharArray() }))
 }
 
 fun problem1(map: List<CharArray>): Int {
@@ -15,18 +15,38 @@ fun problem1(map: List<CharArray>): Int {
     val end = findPosition('E', map)
     map[start.row][start.col] = 'a'
     map[end.row][end.col] = 'z'
+    return visit(listOf(start), end, map)
+}
 
+fun problem2(map: List<CharArray>): Int {
+    val start = findPosition('S', map)
+    val end = findPosition('E', map)
+    map[start.row][start.col] = 'a'
+    map[end.row][end.col] = 'z'
+
+    var startPos = mutableListOf<Position>()
+    for (r in 0 until map.size) {
+        for (c in 0 until map[0].size) {
+            if (map[r][c] == 'a') {
+                startPos.add(Position(r, c))
+            }
+        }
+    }
+
+    return visit(startPos, end, map)
+}
+
+fun visit(startPos: List<Position>, endPos: Position, map: List<CharArray>): Int {
     var visited = mutableSetOf<Position>()
     var queue = ArrayDeque<Pair<Position, Int>>()
-    queue.addLast(Pair(start, 0))
+    startPos.forEach {
+        queue.addLast(Pair(it, 0))
+        visited.add(it)
+    }
     while (!queue.isEmpty()) {
         val (position, steps) = queue.removeFirst()
-        if (position == end) {
+        if (position == endPos) {
             return steps
-        }
-        if (steps > map.size * map[0].size) {
-            println("looping")
-            break
         }
         visited.add(position)
 
