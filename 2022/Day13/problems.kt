@@ -5,6 +5,7 @@ fun main(args: Array<String>) {
 
     val lines = File(args[0]).readLines()
     println(problem1(lines))
+    println(problem2(lines))
 }
 
 fun problem1(lines: List<String>): Int {
@@ -18,6 +19,26 @@ fun problem1(lines: List<String>): Int {
                 }
             }
             .sum()
+}
+
+fun problem2(lines: List<String>): Int {
+    val divider1 = "[[2]]"
+    val divider2 = "[[6]]"
+    val newLines = lines.filter { it != "" }.toMutableList()
+    newLines.add(divider1)
+    newLines.add(divider2)
+    newLines.sortWith(
+            Comparator<String> { a, b ->
+                val result = compare(a, b)
+                when (result) {
+                    Result.GOOD -> -1
+                    Result.BAD -> 1
+                    Result.CONTINUE -> 0
+                }
+            }
+    )
+
+    return (newLines.indexOf(divider1) + 1) * (newLines.indexOf(divider2) + 1)
 }
 
 enum class Result {
