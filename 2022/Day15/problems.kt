@@ -16,10 +16,26 @@ fun main(args: Array<String>) {
                     )
                 }
             }
-    println(problem1(input, args[1].toInt()))
+    println(problem1(input))
+    println(problem2(input))
 }
 
-fun problem1(input: List<Pair<Position, Position>>, targetRow: Int): Int {
+fun problem1(input: List<Pair<Position, Position>>): Int {
+    return findIntervals(input, 2000000).map { (from: Int, to: Int) -> to - from }.sum()
+}
+
+fun problem2(input: List<Pair<Position, Position>>): Long {
+    for (row in 0..4000000) {
+        val intervals = findIntervals(input, row)
+        if (intervals.size > 1) {
+            return (intervals.first().second + 1).toLong() * 4000000L + row.toLong()
+        }
+    }
+
+    throw Exception("Logic error")
+}
+
+fun findIntervals(input: List<Pair<Position, Position>>, targetRow: Int): List<Pair<Int, Int>> {
     val intervals =
             input
                     .map { (sensor: Position, beacon: Position) ->
@@ -38,13 +54,12 @@ fun problem1(input: List<Pair<Position, Position>>, targetRow: Int): Int {
     var mergedIntervals = mutableListOf(intervals.first())
     intervals.forEach { (from: Int, to: Int) ->
         val (lastFrom, lastTo) = mergedIntervals.last()
-        if (from > lastTo) {
+        if (from > lastTo + 1) {
             mergedIntervals.add(Pair<Int, Int>(from, to))
         } else {
             mergedIntervals.removeAt(mergedIntervals.size - 1)
             mergedIntervals.add(Pair<Int, Int>(lastFrom, max(lastTo, to)))
         }
     }
-
-    return mergedIntervals.map { (from: Int, to: Int) -> to - from }.sum()
+    return mergedIntervals
 }
