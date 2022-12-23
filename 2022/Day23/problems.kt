@@ -6,6 +6,7 @@ data class Position(val row: Int, val col: Int)
 fun main(args: Array<String>) {
     val lines = File(args[0]).readLines()
     println(problem1(createElfPositions(lines)))
+    println(problem2(createElfPositions(lines)))
 }
 
 fun createElfPositions(lines: List<String>): MutableSet<Position> {
@@ -53,6 +54,35 @@ fun problem1(elfPositions: MutableSet<Position>): Int {
         maxCol = max(maxCol, col)
     }
     return (1 + maxRow - minRow) * (1 + maxCol - minCol) - elfPositions.size
+}
+
+fun problem2(elfPositions: MutableSet<Position>): Int {
+    for (round in 0 until 100000) {
+        val tmp = mutableMapOf<Position, MutableList<Position>>()
+        for (elfPosition in elfPositions) {
+            val proposedMove = proposeNextMove(elfPosition, elfPositions, round)
+            if (proposedMove != null) {
+                if (tmp.containsKey(proposedMove)) {
+                    tmp[proposedMove]!!.add(elfPosition)
+                } else {
+                    tmp[proposedMove] = mutableListOf(elfPosition)
+                }
+            }
+        }
+
+        if (tmp.size == 0) {
+            return round + 1 // round is 0-based
+        }
+
+        for ((proposedMove, elves) in tmp) {
+            if (elves.size == 1) {
+                elfPositions.remove(elves[0])
+                elfPositions.add(proposedMove)
+            }
+        }
+    }
+
+    throw Exception("Expected to exit early")
 }
 
 fun proposeNextMove(elfPosition: Position, elfPositions: Set<Position>, round: Int): Position? {
