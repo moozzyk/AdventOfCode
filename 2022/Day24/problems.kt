@@ -14,16 +14,35 @@ data class State(val row: Int, val col: Int, val ticks: Int)
 fun main(args: Array<String>) {
     val lines = File(args[0]).readLines()
     println(problem1(lines))
+    println(problem2(lines))
 }
 
 fun problem1(lines: List<String>): Int {
     var areas = mutableListOf(createArea(lines))
+    return findPath(areas, Pair(0, 1), Pair(lines.size - 1, lines[0].length - 2))
+}
+
+fun problem2(lines: List<String>): Int {
+    var areas = mutableListOf(createArea(lines))
+    val trip1 = findPath(areas, Pair(0, 1), Pair(lines.size - 1, lines[0].length - 2))
+    areas = mutableListOf(areas[trip1])
+    val trip2 = findPath(areas, Pair(lines.size - 1, lines[0].length - 2), Pair(0, 1))
+    areas = mutableListOf(areas[trip2])
+    val trip3 = findPath(areas, Pair(0, 1), Pair(lines.size - 1, lines[0].length - 2))
+    return trip1 + trip2 + trip3
+}
+
+fun findPath(
+        areas: MutableList<List<MutableList<Int>>>,
+        start: Pair<Int, Int>,
+        end: Pair<Int, Int>
+): Int {
     var q = ArrayDeque<State>()
-    q.add(State(0, 1, 0))
+    q.add(State(start.first, start.second, 0))
     var visited = mutableSetOf(q.first())
     while (!q.isEmpty()) {
         var (row, col, ticks) = q.removeFirst()
-        if (row == areas.last().size - 1) {
+        if (row == end.first && col == end.second) {
             return ticks - 1
         }
         if (areas.size == ticks) {
@@ -39,7 +58,7 @@ fun problem1(lines: List<String>): Int {
                         Pair(row, col + 1)
                 )) {
             val (r, c) = newPos
-            if (r >= 0 && area[r][c] == EMPTY) {
+            if (r >= 0 && r < area.size && area[r][c] == EMPTY) {
                 val newState = State(r, c, ticks + 1)
                 if (!visited.contains(newState)) {
                     visited.add(newState)
