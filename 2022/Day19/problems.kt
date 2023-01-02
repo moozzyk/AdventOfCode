@@ -50,6 +50,7 @@ fun main(args: Array<String>) {
     val lines = File(args[0]).readLines()
     val blueprints = createBlueprints(lines)
     println(problem1(blueprints))
+    println(problem2(blueprints))
 }
 
 fun createBlueprints(lines: List<String>): List<Blueprint> {
@@ -85,17 +86,36 @@ fun createBlueprints(lines: List<String>): List<Blueprint> {
 }
 
 fun problem1(blueprints: List<Blueprint>): Int {
-    var results =
-            blueprints.map {
-                Pair(it, executeBlueprint(it, 1, Robots(1, 0, 0, 0), Resources(0, 0, 0)))
-            }
-    return results.map { (blueprint, result) -> blueprint.id * result }.sum()
+    return solve(blueprints, 24).map { (blueprint, result) -> blueprint.id * result }.sum()
 }
 
-fun executeBlueprint(blueprint: Blueprint, minute: Int, robots: Robots, resources: Resources): Int {
+fun problem2(blueprints: List<Blueprint>): Int {
+    return solve(blueprints.take(3), 32).map { it.second }.reduce { a, v -> a * v }
+}
+
+fun solve(blueprints: List<Blueprint>, timeLimit: Int): List<Pair<Blueprint, Int>> {
+    var results =
+            blueprints.map {
+                Pair(it, executeBlueprint(it, 1, Robots(1, 0, 0, 0), Resources(0, 0, 0), timeLimit))
+            }
+    return results
+}
+
+fun executeBlueprint(
+        blueprint: Blueprint,
+        minute: Int,
+        robots: Robots,
+        resources: Resources,
+        timeLimit: Int
+): Int {
     var geodes = robots.geodeRobots
-    if (minute == 24) {
+    if (minute == timeLimit) {
         return geodes
+    }
+
+    // Cut some branches
+    if (resources.ore > 10 || resources.clay > 100 || resources.obsidian > 30) {
+        return -1
     }
 
     val purchaseOptions = robotPurchaseOptions(blueprint, resources)
@@ -107,7 +127,8 @@ fun executeBlueprint(blueprint: Blueprint, minute: Int, robots: Robots, resource
                         blueprint,
                         minute + 1,
                         robots + p,
-                        resources + robots.mine() - cost
+                        resources + robots.mine() - cost,
+                        timeLimit,
                 )
 
         maxDescGeodes = max(descGeodes, maxDescGeodes)
@@ -122,7 +143,11 @@ fun robotPurchaseOptions(blueprint: Blueprint, resources: Resources): List<Robot
     }
 
     if (canBuy(resources, blueprint.obsidianRobotCost)) {
-        return listOf(Robots(0, 0, 1, 0), Robots(0, 0, 0, 0))
+        // Heurestics to avoid too many turns without buying any robot
+        if (resources.ore > 6) {
+            return listOf(Robots(0, 0, 1, 0), Robots(0, 1, 0, 0))
+        }
+        return listOf(Robots(0, 0, 1, 0), Robots(0, 1, 0, 0), Robots(0, 0, 0, 0))
     }
 
     if (canBuy(resources, blueprint.clayRobotCost) && canBuy(resources, blueprint.oreRobotCost)) {
@@ -149,10 +174,6 @@ fun robotCost(robots: Robots, blueprint: Blueprint): Cost {
             blueprint.clayRobotCost * robots.clayRobots +
             blueprint.obsidianRobotCost * robots.obsidianRobots +
             blueprint.geodeRobotCost * robots.geodeRobots
-}
-
-fun canBuy(robots: Robots, resources: Resources, blueprint: Blueprint): Boolean {
-    return canBuy(resources, robotCost(robots, blueprint))
 }
 
 fun canBuy(resources: Resources, cost: Cost): Boolean {
