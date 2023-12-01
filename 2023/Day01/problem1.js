@@ -11,7 +11,6 @@ function getOuterDigits(s, digitMap) {
     }
   }
 
-  digits.sort(([p, i], [p1, i1]) => i - i1);
   return [digitMap.get(digits.at(0)[0]), digitMap.get(digits.at(-1)[0])];
 }
 
