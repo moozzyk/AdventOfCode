@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { EOL } from "os";
 
 function isDigit(c) {
-  return c >= "0" && c <= "9";
+  return c && c >= "0" && c <= "9";
 }
 
 function isPartSymbol(lines, row, col) {
@@ -60,9 +60,62 @@ function problem1(lines) {
   return parts.reduce((res, n) => res + n, 0);
 }
 
+function getPartAt(lines, row, col) {
+  if (row < 0 || row >= lines.length || !isDigit(lines[row][col])) {
+    return "";
+  }
+  let part = "";
+  while (col > 0 && isDigit(lines[row][col - 1])) {
+    col--;
+  }
+  while (col < lines[row].length && isDigit(lines[row][col])) {
+    part += lines[row][col];
+    col++;
+  }
+  return part;
+}
+
+function findGearsAt(lines, row, col) {
+  const gears = [];
+  gears.push(getPartAt(lines, row - 1, col));
+  gears.push(getPartAt(lines, row + 1, col));
+  gears.push(getPartAt(lines, row, col - 1));
+  gears.push(getPartAt(lines, row, col + 1));
+  if (!isDigit(lines[row - 1][col])) {
+    gears.push(getPartAt(lines, row - 1, col - 1));
+    gears.push(getPartAt(lines, row - 1, col + 1));
+  }
+  if (!isDigit(lines[row + 1][col])) {
+    gears.push(getPartAt(lines, row + 1, col - 1));
+    gears.push(getPartAt(lines, row + 1, col + 1));
+  }
+  return gears.filter((g) => g.length > 0).map((g) => parseInt(g));
+}
+
+function findGears(lines) {
+  const gears = [];
+  for (let row = 0; row < lines.length; row++) {
+    for (let col = 0; col < lines[row].length; col++) {
+      if (lines[row][col] === "*") {
+        const tmp = findGearsAt(lines, row, col);
+        if (tmp.length > 1) {
+          gears.push(tmp.reduce((res, n) => res * n, 1));
+        }
+      }
+    }
+  }
+  return gears;
+}
+
+function problem2(lines) {
+  const gears = findGears(lines);
+  return gears.reduce((res, n) => res + n, 0);
+}
+
 const fileName = process.argv[2];
 const lines = readFileSync(fileName, "utf8")
   .split(EOL)
   .filter((l) => l.length > 0);
 
 console.log(problem1(lines));
+console.log(problem2(lines));
