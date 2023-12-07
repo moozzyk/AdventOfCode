@@ -10,7 +10,6 @@ const labelMap = new Map([
   ["8", 8],
   ["9", 9],
   ["T", 10],
-  ["J", 11],
   ["Q", 12],
   ["K", 13],
   ["A", 14],
@@ -18,8 +17,9 @@ const labelMap = new Map([
 
 function parse(line) {
   const [hand, bid] = line.split(" ");
-  return { hand, bid };
+  return { hand, bid: Number(bid) };
 }
+
 function handType(hand) {
   var map = new Map();
   for (const c of hand) {
@@ -37,11 +37,28 @@ function handType(hand) {
   return 6;
 }
 
-function compareHands(l, r) {
+function handTypeWithJokers(hand) {
+  const handWithNoJokers = hand.replaceAll("J", "");
+  const numJokers = hand.length - handWithNoJokers.length;
+  if (numJokers === 0 || numJokers === 5) {
+    return handType(hand);
+  }
+
+  var map = new Map();
+  for (const c of handWithNoJokers) {
+    map.set(c, (map.get(c) ?? 0) + 1);
+  }
+
+  const mostFreqCard = [...map.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  const strongestHandType = handWithNoJokers + mostFreqCard.repeat(numJokers);
+  return handType(strongestHandType);
+}
+
+function compareHands(l, r, helperFn) {
   const hand1 = l.hand;
   const hand2 = r.hand;
-  const hand1Type = handType(hand1);
-  const hand2Type = handType(hand2);
+  const hand1Type = helperFn(hand1);
+  const hand2Type = helperFn(hand2);
   if (hand1Type != hand2Type) {
     return hand2Type - hand1Type;
   }
@@ -52,13 +69,24 @@ function compareHands(l, r) {
   return 0;
 }
 
-function problem1(lines) {
-  const input = lines.map(parse);
+function solve(input, helperFn) {
+  const comparer = (l, r) => compareHands(l, r, helperFn);
   return input
-    .sort(compareHands)
+    .sort(comparer)
     .map(({ bid }, rank) => bid * (rank + 1))
     .reduce((acc, n) => acc + n, 0);
 }
 
-const lines = readLines(process.argv[2]);
-console.log(problem1(lines));
+function problem1(input) {
+  labelMap.set("J", 11);
+  return solve(input, handType);
+}
+
+function problem2(input) {
+  labelMap.set("J", 1);
+  return solve(input, handTypeWithJokers);
+}
+
+const input = readLines(process.argv[2]).map(parse);
+console.log(problem1(input));
+console.log(problem2(input));
