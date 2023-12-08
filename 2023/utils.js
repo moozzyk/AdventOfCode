@@ -10,3 +10,12 @@ export function readLines(fileName) {
     .split(EOL)
     .filter((l) => l.length > 0);
 }
+
+export function gcd(n1, n2) {
+  if (n2 === 0) return n1;
+  return gcd(n2, n1 % n2);
+}
+
+export function lcm(n) {
+  return n.reduce((acc, n) => (acc * n) / gcd(acc, n), n[0]);
+}
