@@ -11,7 +11,7 @@
       "skipFiles": ["<node_internals>/**"],
       "cwd": "${workspaceFolder}/Day10",
       "program": "${workspaceFolder}/Day10/problems.js",
-      "args": ["input2.txt"]
+      "args": ["input1.txt"]
     }
   ]
 }
