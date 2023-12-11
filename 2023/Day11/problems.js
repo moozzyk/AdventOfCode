@@ -1,17 +1,17 @@
 import { readLines, isDigit } from "../utils.js";
 
-function countSteps(from, to, duplicates) {
+function countSteps(from, to, duplicates, expansionFactor) {
   let distance = 0;
   for (let i = Math.min(from, to); i < Math.max(from, to); i++) {
     distance++;
     if (duplicates.has(i)) {
-      distance++;
+      distance += expansionFactor;
     }
   }
   return distance;
 }
 
-function problem1(image) {
+function solve(image, expansionFactor) {
   const galaxies = [];
   for (let row = 0; row < image.length; row++) {
     for (let col = 0; col < image[row].length; col++) {
@@ -20,7 +20,6 @@ function problem1(image) {
       }
     }
   }
-  console.log(galaxies);
   const duplicateRows = new Set(
     Array(image.length)
       .fill()
@@ -42,15 +41,32 @@ function problem1(image) {
   for (let from = 0; from < galaxies.length; from++) {
     for (let to = from + 1; to < galaxies.length; to++) {
       let distance =
-        countSteps(galaxies[from].row, galaxies[to].row, duplicateRows) +
-        countSteps(galaxies[from].col, galaxies[to].col, duplicateCols);
-      // console.log(from + 1, to + 1, galaxies[from], galaxies[to], distance);
+        countSteps(
+          galaxies[from].row,
+          galaxies[to].row,
+          duplicateRows,
+          expansionFactor
+        ) +
+        countSteps(
+          galaxies[from].col,
+          galaxies[to].col,
+          duplicateCols,
+          expansionFactor
+        );
       distances.push(distance);
     }
   }
-  // console.log(distances.length);
   return distances.reduce((acc, n) => acc + n, 0);
 }
 
-const lines = readLines(process.argv[2]);
-console.log(problem1(lines));
+function problem1(image) {
+  return solve(image, 1);
+}
+
+function problem2(image) {
+  return solve(image, 999999);
+}
+
+const image = readLines(process.argv[2]);
+console.log(problem1(image));
+console.log(problem2(image));
