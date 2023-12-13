@@ -19,3 +19,7 @@ export function gcd(n1, n2) {
 export function lcm(n) {
   return n.reduce((acc, n) => (acc * n) / gcd(acc, n), n[0]);
 }
+
+export function sum(a) {
+  return a.reduce((acc, n) => acc + n, 0);
+}
