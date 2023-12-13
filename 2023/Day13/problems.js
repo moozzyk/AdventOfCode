@@ -4,8 +4,10 @@ import { sum } from "../utils.js";
 
 function checkHorizontalSplit(mirror, row) {
   for (let i = 0; row - i >= 0 && row + i + 1 < mirror.length; i++) {
-    if (mirror[row - i] != mirror[row + 1 + i]) {
-      return false;
+    for (let j = 0; j < mirror[0].length; j++) {
+      if (mirror[row - i][j] != mirror[row + 1 + i][j]) {
+        return false;
+      }
     }
   }
   return true;
@@ -22,19 +24,23 @@ function checkVerticalSplit(mirror, col) {
   return true;
 }
 
-function findSplit(mirror) {
+function findSplit(mirror, skipSplit) {
   for (let i = 0; i < mirror.length - 1; i++) {
     if (checkHorizontalSplit(mirror, i)) {
-      return 100 * (i + 1);
+      const score = 100 * (i + 1);
+      if (score != skipSplit) return score;
     }
   }
 
   for (let i = 0; i < mirror[0].length - 1; i++) {
     if (checkVerticalSplit(mirror, i)) {
-      return i + 1;
+      const score = i + 1;
+      if (score != skipSplit) {
+        return i + 1;
+      }
     }
   }
-  throw new Error("Logic error");
+  return undefined;
 }
 
 function problem1(mirrors) {
@@ -42,8 +48,35 @@ function problem1(mirrors) {
   return sum(result);
 }
 
+function findSmudges(mirror) {
+  const originalSplit = findSplit(mirror);
+  for (let row = 0; row < mirror.length; row++) {
+    for (let col = 0; col < mirror[row].length; col++) {
+      const tmp = mirror[row][col];
+      mirror[row][col] = tmp == "#" ? "." : "#";
+      const split = findSplit(mirror, originalSplit);
+      if (split) {
+        return split;
+      }
+      mirror[row][col] = tmp;
+    }
+  }
+  throw new Error("Logic error");
+}
+
+function problem2(mirrors) {
+  const result = mirrors.map(findSmudges);
+  return sum(result);
+}
+
 const mirrors = readFileSync(process.argv[2], "utf8")
   .split(`${EOL}${EOL}`)
-  .map((l) => l.split(EOL).filter((l) => l.length > 0));
-
+  .map((l) =>
+    l
+      .split(EOL)
+      .filter((l) => l.length > 0)
+      .map((l) => l.split(""))
+  );
+// console.log(mirrors);
 console.log(problem1(mirrors));
+console.log(problem2(mirrors));
