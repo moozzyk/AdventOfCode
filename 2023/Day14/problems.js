@@ -1,4 +1,4 @@
-import { sum, readLines } from "../utils.js";
+import { sum, readLines, rotateRightInPlace } from "../utils.js";
 
 function computeNorthLoad(platform) {
   let load = 0;
@@ -30,65 +30,11 @@ function tiltNorth(platform) {
   }
 }
 
-function tiltWest(platform) {
-  for (let row = 0; row < platform.length; row++) {
-    let targetCol = 0;
-    for (let col = 0; col < platform.length; col++) {
-      if (platform[row][col] == "#") {
-        targetCol = col + 1;
-      }
-      if (platform[row][col] == "O") {
-        if (col != targetCol) {
-          platform[row][targetCol] = "O";
-          platform[row][col] = ".";
-        }
-        targetCol++;
-      }
-    }
-  }
-}
-
-function tiltSouth(platform) {
-  for (let col = 0; col < platform.length; col++) {
-    let targetRow = platform.length - 1;
-    for (let row = platform.length - 1; row >= 0; row--) {
-      if (platform[row][col] == "#") {
-        targetRow = row - 1;
-      }
-      if (platform[row][col] == "O") {
-        if (row != targetRow) {
-          platform[targetRow][col] = "O";
-          platform[row][col] = ".";
-        }
-        targetRow--;
-      }
-    }
-  }
-}
-
-function tiltEast(platform) {
-  for (let row = 0; row < platform.length; row++) {
-    let targetCol = platform.length - 1;
-    for (let col = platform.length - 1; col >= 0; col--) {
-      if (platform[row][col] == "#") {
-        targetCol = col - 1;
-      }
-      if (platform[row][col] == "O") {
-        if (col != targetCol) {
-          platform[row][targetCol] = "O";
-          platform[row][col] = ".";
-        }
-        targetCol--;
-      }
-    }
-  }
-}
-
 function cycle(platform) {
-  tiltNorth(platform);
-  tiltWest(platform);
-  tiltSouth(platform);
-  tiltEast(platform);
+  for (let i = 0; i < 4; i++) {
+    tiltNorth(platform);
+    rotateRightInPlace(platform);
+  }
 }
 
 function problem1(platform) {
