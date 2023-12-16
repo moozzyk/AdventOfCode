@@ -5,7 +5,7 @@ const RIGHT = 1;
 const DOWN = 2;
 const LEFT = 3;
 
-function run(contraption) {
+function run(contraption, start) {
   const beams = Array.from({ length: contraption.length }, () =>
     Array.from({ length: contraption[0].length }, () => [
       false,
@@ -14,7 +14,7 @@ function run(contraption) {
       false,
     ])
   );
-  const q = [{ direction: RIGHT, row: 0, col: 0 }];
+  const q = [start];
   while (q.length > 0) {
     let { direction, row, col } = q.shift();
     while (
@@ -66,8 +66,26 @@ function run(contraption) {
 }
 
 function problem1(contraption) {
-  return run(contraption);
+  return run(contraption, { direction: RIGHT, row: 0, col: 0 });
+}
+
+function problem2(contraption) {
+  const res = [];
+  for (let row = 0; row < contraption.length; row++) {
+    res.push(run(contraption, { direction: RIGHT, row, col: 0 }));
+    res.push(
+      run(contraption, { direction: LEFT, row, col: contraption[0].length - 1 })
+    );
+  }
+  for (let col = 0; col < contraption[0].length; col++) {
+    res.push(run(contraption, { direction: DOWN, row: 0, col }));
+    res.push(
+      run(contraption, { direction: UP, row: contraption.length - 1, col })
+    );
+  }
+  return Math.max(...res);
 }
 
 const lines = readLines(process.argv[2]);
 console.log(problem1(lines));
+console.log(problem2(lines));
