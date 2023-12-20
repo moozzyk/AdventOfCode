@@ -1,4 +1,4 @@
-import { readLines, sum } from "../utils.js";
+import { readLines, sum, multiply } from "../utils.js";
 
 function parseRule(rule) {
   const regex = /(\w)(<|>)(\d+):(\w+)/g;
@@ -66,7 +66,59 @@ function problem1(parts, workflows) {
   );
 }
 
+function splitRange(range, { category, relation, value, action }) {
+  const [from, to] = range[category];
+  const result = { ...range };
+  if (relation == ">") result[category] = [value + 1, to];
+  if (relation == ">=") result[category] = [value, to];
+  if (relation == "<") result[category] = [from, value - 1];
+  if (relation == "<=") result[category] = [from, value];
+  return result;
+}
+
+function traverse(workflowId, range, workflows, results) {
+  if (workflowId == "R") return;
+  if (workflowId == "A") {
+    results.push(range);
+    return;
+  }
+  const workflow = workflows.get(workflowId);
+  let elseRange = { ...range };
+  for (const rule of workflow) {
+    if (!rule.relation) {
+      traverse(rule.action, elseRange, workflows, results);
+    } else {
+      traverse(rule.action, splitRange(elseRange, rule), workflows, results);
+      elseRange = splitRange(elseRange, {
+        ...rule,
+        relation: rule.relation == ">" ? "<=" : ">=",
+      });
+    }
+  }
+}
+
+function getAllowedRanges(workflows) {
+  const results = [];
+  traverse(
+    "in",
+    { x: [1, 4000], m: [1, 4000], a: [1, 4000], s: [1, 4000] },
+    workflows,
+    results
+  );
+  return results;
+}
+
+function problem2(allowedRanges) {
+  return sum(
+    allowedRanges.map(({ x, m, a, s }) =>
+      multiply([x, m, a, s].map(([from, to]) => to - from + 1))
+    )
+  );
+}
+
 const lines = readLines(process.argv[2]);
 const workflows = parseWorkflows(lines);
+const allowedRanges = getAllowedRanges(workflows);
 const parts = parseParts(lines);
 console.log(problem1(parts, workflows));
+console.log(problem2(allowedRanges));

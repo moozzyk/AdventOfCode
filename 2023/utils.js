@@ -24,6 +24,10 @@ export function sum(a) {
   return a.reduce((acc, n) => acc + n, 0);
 }
 
+export function multiply(a) {
+  return a.reduce((acc, n) => acc * n, 1);
+}
+
 export function rotateRightInPlace(a) {
   if (a.length != a[0].length) {
     throw new Error("The array needs to be rectangular");
