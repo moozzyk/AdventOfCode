@@ -9,8 +9,8 @@
       "request": "launch",
       "name": "Launch Program",
       "skipFiles": ["<node_internals>/**"],
-      "cwd": "${workspaceFolder}/Day22",
-      "program": "${workspaceFolder}/Day22/problems.js",
+      "cwd": "${workspaceFolder}/Day23",
+      "program": "${workspaceFolder}/Day23/problems.js",
       "args": ["input1.txt"]
     }
   ]
