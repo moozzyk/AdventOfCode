@@ -16,7 +16,15 @@ function isMatch(start, size, springs) {
   return true;
 }
 
-function countMatches(start, groupIdx, groups, springs) {
+function memoizedCountMatches(start, groupIdx, groups, springs, cache) {
+  const key = `${start}_${groupIdx}`;
+  if (!cache.has(key)) {
+    cache.set(key, countMatches(start, groupIdx, groups, springs, cache));
+  }
+  return cache.get(key);
+}
+
+function countMatches(start, groupIdx, groups, springs, cache) {
   if (groupIdx == groups.length) {
     for (let i = start; i < springs.length; i++) {
       if (springs[i] == "#") {
@@ -29,7 +37,13 @@ function countMatches(start, groupIdx, groups, springs) {
   let matches = 0;
   for (let i = start; i < springs.length; i++) {
     if (isMatch(i, size, springs)) {
-      matches += countMatches(i + size + 1, groupIdx + 1, groups, springs);
+      matches += memoizedCountMatches(
+        i + size + 1,
+        groupIdx + 1,
+        groups,
+        springs,
+        cache
+      );
     }
     if (springs[i] == "#") {
       break;
@@ -40,8 +54,25 @@ function countMatches(start, groupIdx, groups, springs) {
 
 function problem1(records) {
   const numWays = records.map(({ springs, groups }) =>
-    countMatches(0, 0, groups, springs)
+    countMatches(0, 0, groups, springs, new Map())
   );
+
+  return sum(numWays);
+}
+
+function expandSprings({ springs, groups }) {
+  return {
+    springs: new Array(5).fill(springs).join("?"),
+    groups: new Array(5).fill(groups).flat(),
+  };
+}
+
+function problem2(records) {
+  const numWays = records
+    .map(expandSprings)
+    .map(({ springs, groups }) =>
+      countMatches(0, 0, groups, springs, new Map())
+    );
 
   return sum(numWays);
 }
@@ -55,3 +86,4 @@ const records = lines
   }));
 
 console.log(problem1(records));
+console.log(problem2(records));
