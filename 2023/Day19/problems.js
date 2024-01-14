@@ -37,36 +37,7 @@ function parseParts(lines) {
     }));
 }
 
-function evaluate({ category, relation, value, action }, part) {
-  if (!relation) return action;
-  if (relation == ">" && part[category] > value) return action;
-  if (relation == "<" && part[category] < value) return action;
-  return undefined;
-}
-
-function applyRules(part, rules, workflows) {
-  for (const rule of rules) {
-    const action = evaluate(rule, part);
-    if (action === "R" || action === "A") {
-      return action;
-    }
-    if (action) {
-      return applyRules(part, workflows.get(action), workflows);
-    }
-  }
-  throw new Error("No applicable rule found.");
-}
-
-function problem1(parts, workflows) {
-  return sum(
-    parts
-      .map((p) => [p, applyRules(p, workflows.get("in"), workflows)])
-      .filter(([_, result]) => result == "A")
-      .map(([part, _]) => part.x + part.m + part.a + part.s)
-  );
-}
-
-function splitRange(range, { category, relation, value, action }) {
+function splitRange(range, { category, relation, value }) {
   const [from, to] = range[category];
   const result = { ...range };
   if (relation == ">") result[category] = [value + 1, to];
@@ -108,6 +79,23 @@ function getAllowedRanges(workflows) {
   return results;
 }
 
+function problem1(parts, allowedRanges) {
+  const validatePart = (part, ranges) =>
+    ranges
+      .map((r) =>
+        ["x", "m", "a", "s"]
+          .map((c) => part[c] >= r[c][0] && part[c] <= r[c][1])
+          .every(Boolean)
+      )
+      .some(Boolean);
+
+  return sum(
+    parts
+      .filter((p) => validatePart(p, allowedRanges))
+      .map(({ x, m, a, s }) => x + m + a + s)
+  );
+}
+
 function problem2(allowedRanges) {
   return sum(
     allowedRanges.map(({ x, m, a, s }) =>
@@ -120,5 +108,5 @@ const lines = readLines(process.argv[2]);
 const workflows = parseWorkflows(lines);
 const allowedRanges = getAllowedRanges(workflows);
 const parts = parseParts(lines);
-console.log(problem1(parts, workflows));
+console.log(problem1(parts, allowedRanges));
 console.log(problem2(allowedRanges));
