@@ -5,6 +5,10 @@ export function isDigit(c) {
   return c && c >= "0" && c <= "9";
 }
 
+export function mod(number, n) {
+  return ((number % n) + n) % n;
+}
+
 export function readLines(fileName) {
   return readFileSync(fileName, "utf8")
     .split(EOL)

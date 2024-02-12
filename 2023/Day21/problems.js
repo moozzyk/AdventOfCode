@@ -1,4 +1,4 @@
-import { readLines } from "../utils.js";
+import { readLines, mod } from "../utils.js";
 
 function findStart(garden) {
   for (let r = 0; r < garden.length; r++) {
@@ -11,59 +11,45 @@ function findStart(garden) {
   throw new Error("Couldn't find starting pont.");
 }
 
-function findNumSteps({ startRow, startCol }, { row, col }, garden) {
-  const visited = new Set();
-  const q = [{ r: row, c: col, s: 0 }];
+function getTile(garden, row, col, startRow, startCol) {
+  const newRow = mod(startRow - row, garden.length);
+  const newCol = mod(startCol + col, garden[0].length);
+  return garden[newRow][newCol];
+}
+
+function visitGarden(garden, maxSteps) {
+  const { r: startRow, c: startCol } = findStart(garden);
+  const visited = new Map();
+  const q = [{ r: 0, c: 0, s: 0 }];
   let qIdx = 0;
   while (qIdx < q.length) {
     const { r, c, s } = q[qIdx++];
-    if (r == startRow && c == startCol) {
-      return s;
+    const posHash = `${r}_${c}`;
+    if (visited.has(posHash) || s > maxSteps) {
+      continue;
     }
-    const hash = `${r}_${c}`;
-    if (visited.has(hash)) continue;
-    visited.add(hash);
-    if (r < garden.length - 1 && garden[r + 1][c] != "#") {
+    visited.set(posHash, s);
+    if (getTile(garden, r + 1, c, startRow, startCol) != "#") {
       q.push({ r: r + 1, c, s: s + 1 });
     }
-    if (r > 0 && garden[r - 1][c] != "#") {
-      q.push({ r: r - 1, c, s: s + 1 });
+    if (getTile(garden, r - 1, c, startRow, startCol) != "#") {
+      q.push({ r: r - 1, c: c, s: s + 1 });
     }
-    if (c < garden[0].length - 1 && garden[r][c + 1] != "#") {
+    if (getTile(garden, r, c + 1, startRow, startCol) != "#") {
       q.push({ r, c: c + 1, s: s + 1 });
     }
-    if (c > 0 && garden[r][c - 1] != "#") {
+    if (getTile(garden, r, c - 1, startRow, startCol) != "#") {
       q.push({ r, c: c - 1, s: s + 1 });
     }
   }
-  return Number.MAX_SAFE_INTEGER;
+  return visited;
 }
 
-function problem1(garden1, numSteps) {
-  const garden = garden1.map((r) => r.split(""));
-  const { r: startRow, c: startCol } = findStart(garden);
-  let numFields = 0;
-  for (let row = 0; row < garden.length; row++) {
-    for (
-      let col = (startCol % 2) + ((row % 2) - 1);
-      col < garden[0].length;
-      col += 2
-    ) {
-      if (
-        garden[row][col] != "#" &&
-        Math.abs(startRow - row) + Math.abs(startCol - col) <= numSteps
-      ) {
-        if (
-          findNumSteps({ startRow, startCol }, { row, col }, garden) <= numSteps
-        ) {
-          garden[row][col] = "O";
-          numFields++;
-        }
-      }
-    }
-  }
-  garden.map((r) => r.join("")).forEach((l) => console.log(l));
-  return numFields;
+function problem1(garden, maxSteps) {
+  const visited = visitGarden(garden, maxSteps);
+  return [...visited.values()].filter((v) => v % 2 == maxSteps % 2).length;
 }
-const garden = readLines(process.argv[2]);
-console.log(problem1(garden, Number(process.argv[3])));
+
+const garden = readLines(process.argv[2]).map((r) => r.split(""));
+const maxSteps = Number(process.argv[3]);
+console.log(problem1(garden, maxSteps));
