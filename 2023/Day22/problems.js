@@ -1,4 +1,4 @@
-import { readLines } from "../utils.js";
+import { readLines, sum } from "../utils.js";
 
 function sort(cubes) {
   cubes.sort((c1, c2) => c1[0].z - c2[0].z);
@@ -25,7 +25,7 @@ function isClashing(c1, c2) {
   );
 }
 
-function settle() {
+function settle(cubes) {
   nextCube: for (let i = 0; i < cubes.length; i++) {
     const candidate = [{ ...cubes[i][0] }, { ...cubes[i][1] }];
     while (candidate[0].z > 1) {
@@ -41,10 +41,11 @@ function settle() {
       cubes[i] = candidate;
     }
   }
-  sort(cubes);
+  return cubes;
 }
 
 function disintegrationCandidates(cubes) {
+  sort(cubes);
   const supportMap = new Map();
   const supportAny = new Set();
   for (let i = 0; i < cubes.length; i++) {
@@ -75,11 +76,32 @@ function disintegrationCandidates(cubes) {
   return cubes.length - supportAny.size + redundantSupport.size;
 }
 
-function problem1(cubes) {
+function problem1(inputCubes) {
+  let cubes = [...inputCubes];
   settle(cubes);
   return disintegrationCandidates(cubes);
+}
+
+function problem2(inputCubes) {
+  const cubes = settle([...inputCubes]);
+  sort(cubes);
+  const result = [];
+  for (let i = 0; i < cubes.length; i++) {
+    const before = [...cubes];
+    before.splice(i, 1);
+    const after = settle([...before]);
+    let moved = 0;
+    for (let j = 0; j < before.length; j++) {
+      if (before[j][0].z != after[j][0].z) {
+        moved++;
+      }
+    }
+    result.push(moved);
+  }
+  return sum(result);
 }
 
 const lines = readLines(process.argv[2]);
 const cubes = parse(lines).sort((c1, c2) => c1[0].z - c2[0].z);
 console.log(problem1(cubes));
+console.log(problem2(cubes));
