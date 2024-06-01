@@ -1,4 +1,5 @@
 import { readLines } from "../utils.js";
+import { init } from "z3-solver";
 
 function parse(lines) {
   return lines
@@ -47,6 +48,43 @@ function problem1(hailstones, min, max) {
   return res;
 }
 
+async function problem2(h) {
+  const { Context } = await init();
+  const { Solver, Int } = new Context("main");
+
+  const t1 = Int.const("t1");
+  const t2 = Int.const("t2");
+  const t3 = Int.const("t3");
+  const rx = Int.const("rx");
+  const rvx = Int.const("rvx");
+  const ry = Int.const("ry");
+  const rvy = Int.const("rvy");
+  const rz = Int.const("rz");
+  const rvz = Int.const("rvz");
+
+  const solver = new Solver();
+  solver.add(rx.add(t1.mul(rvx)).eq(t1.mul(h[0].velocity[0]).add(h[0].pos[0])));
+  solver.add(ry.add(t1.mul(rvy)).eq(t1.mul(h[0].velocity[1]).add(h[0].pos[1])));
+  solver.add(rz.add(t1.mul(rvz)).eq(t1.mul(h[0].velocity[2]).add(h[0].pos[2])));
+  solver.add(rx.add(t2.mul(rvx)).eq(t2.mul(h[1].velocity[0]).add(h[1].pos[0])));
+  solver.add(ry.add(t2.mul(rvy)).eq(t2.mul(h[1].velocity[1]).add(h[1].pos[1])));
+  solver.add(rz.add(t2.mul(rvz)).eq(t2.mul(h[1].velocity[2]).add(h[1].pos[2])));
+  solver.add(rx.add(t3.mul(rvx)).eq(t3.mul(h[2].velocity[0]).add(h[2].pos[0])));
+  solver.add(ry.add(t3.mul(rvy)).eq(t3.mul(h[2].velocity[1]).add(h[2].pos[1])));
+  solver.add(rz.add(t3.mul(rvz)).eq(t3.mul(h[2].velocity[2]).add(h[2].pos[2])));
+
+  if ((await solver.check()) === "unsat") {
+    throw new Error("Couldn't solve the problem.");
+  }
+  const model = solver.model();
+  return model.get(rx).value() + model.get(ry).value() + model.get(rz).value();
+}
+
 const lines = readLines(process.argv[2]);
 const hailstones = parse(lines);
 console.log(problem1(hailstones, 200000000000000, 400000000000000));
+// the solver takes a long time for 3 first lines, it can finish for fast the last 3
+console.log(await problem2(hailstones.slice(-3)));
+
+// Z3 leaves some handles open and node never exits
+process.exit(0);
