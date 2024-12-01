@@ -1,0 +1,18 @@
+#!/dev/null 
+# File expected to be sourced
+
+function julia_docker_create() {
+  docker run -it -d -v "$PWD":/usr/myapp -w /usr/myapp --name julia-container julia
+}
+
+function julia_docker_start() {
+  docker start julia-container
+}
+
+function julia_docker_stop() {
+  docker stop julia-container
+}
+
+function julia() {
+  docker exec -it julia-container julia "$@"
+}
