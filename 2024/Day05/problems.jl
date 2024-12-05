@@ -18,9 +18,9 @@ end
 
 function is_order_correct(update, page_order_map)
     for i in 1:length(update) - 1
-        to_pages = get(page_order_map, update[i], Set{Int}())
+        to_pages = get(page_order_map, update[i], ())
         for j in i + 1:length(update)
-            if !in(update[j], to_pages)
+            if update[j] ∉ to_pages
                 return false
             end
         end
@@ -36,32 +36,25 @@ function retrieve_correct_page(update, page_order_map)
 end
 
 function problem1(page_order_map, updates)
-    [retrieve_correct_page(update, page_order_map) for update in updates] |> sum
+    return [retrieve_correct_page(update, page_order_map) for update in updates] |> sum
 end
 
 function retrieve_correct_page_if_ordered(update, page_order_map)
-    for i in eachindex(update)
-        to_pages = get(page_order_map, update[i], Set{Int}())
-        num_followers = 0
-        for j in [1:i-1; i+1:length(update)]
-            if update[j] ∈ to_pages
-                num_followers += 1
-            end
-        end
+    all_pages = Set(update)
+    for from in update
+        num_followers = length(intersect(all_pages, get(page_order_map, from, ())))
         if num_followers == div(length(update), 2)
-            return update[i]
+            return from
         end
     end
 end
 
 function problem2(page_order_map, updates)
-    result = 0
-    for update in updates
-        if !is_order_correct(update, page_order_map)
-            result += retrieve_correct_page_if_ordered(update, page_order_map)
-        end
-    end
-    return result
+    return (
+        filter(update->!is_order_correct(update, page_order_map), updates)
+        |> updates -> map(update -> retrieve_correct_page_if_ordered(update, page_order_map), updates)
+        |> sum
+    )
 end
 
 (page_order_map, updates) = readfile(ARGS[1])
