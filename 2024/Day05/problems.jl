@@ -39,6 +39,32 @@ function problem1(page_order_map, updates)
     [retrieve_correct_page(update, page_order_map) for update in updates] |> sum
 end
 
+function retrieve_correct_page_if_ordered(update, page_order_map)
+    for i in eachindex(update)
+        to_pages = get(page_order_map, update[i], Set{Int}())
+        num_followers = 0
+        for j in [1:i-1; i+1:length(update)]
+            if update[j] ∈ to_pages
+                num_followers += 1
+            end
+        end
+        if num_followers == div(length(update), 2)
+            return update[i]
+        end
+    end
+end
+
+function problem2(page_order_map, updates)
+    result = 0
+    for update in updates
+        if !is_order_correct(update, page_order_map)
+            result += retrieve_correct_page_if_ordered(update, page_order_map)
+        end
+    end
+    return result
+end
+
 (page_order_map, updates) = readfile(ARGS[1])
 println(problem1(page_order_map, updates))
+println(problem2(page_order_map, updates))
 
