@@ -21,15 +21,11 @@ function is_valid(accumulator, target, factors, operations)
     return false
 end
 
-function solve(equations, operations)
-    result = 0
-    for (target, factors) in equations
-        if is_valid(factors[1], target, tail(factors), operations)
-            result += target
-        end
-    end
-    return result
+function evaluate((target, factors), operations)
+    return is_valid(factors[1], target, tail(factors), operations) ? target : 0
 end
+
+solve(equations, operations) = map(equation -> evaluate(equation, operations), equations) |> sum
 
 function problem1(equations)
     solve(equations, [+, *])
