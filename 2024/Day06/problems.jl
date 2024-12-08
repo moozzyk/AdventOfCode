@@ -13,12 +13,18 @@ function walk(map, pos)
     curr_dir = 0
     steps = 0
     visited = Set([pos])
+    turns = Set{Tuple{Int, Int, Int}}()
     while true
         (next_row, next_col) = pos .+ directions[curr_dir + 1]
         if next_row < 1 || next_row > length(map) || next_col < 1 || next_col > length(map[next_row])
             return visited
         end
         if map[next_row][next_col] == '#'
+            turn = (row, col, curr_dir)
+            if (turn in turns)
+                return nothing
+            end
+            push!(turns, turn)
             curr_dir = (curr_dir + 1) % 4
         else
             pos = (next_row, next_col)
