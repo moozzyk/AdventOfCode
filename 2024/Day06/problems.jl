@@ -11,7 +11,6 @@ end
 function walk(map, pos)
     directions = [(-1, 0), (0, 1), (1, 0), (0, -1)]
     curr_dir = 0
-    steps = 0
     visited = Set([pos])
     turns = Set{Tuple{Int, Int, Int}}()
     while true
@@ -20,7 +19,7 @@ function walk(map, pos)
             return visited
         end
         if map[next_row][next_col] == '#'
-            turn = (row, col, curr_dir)
+            turn = (curr_dir, pos...)
             if (turn in turns)
                 return nothing
             end
@@ -29,14 +28,8 @@ function walk(map, pos)
         else
             pos = (next_row, next_col)
             if pos in visited
-                steps += 1
             else
                 push!(visited, pos)
-                steps = 0
-            end
-            # dumb cycle detection
-            if steps > 6000
-                return nothing
             end
         end
     end
