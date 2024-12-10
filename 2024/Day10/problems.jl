@@ -5,10 +5,12 @@ end
 
 function compute_trailhead_score(pos, map, visited_peaks)
     if (map[pos...] == 9)
-        if pos in visited_peaks 
-            return 0
+        if visited_peaks != nothing
+            if pos in visited_peaks 
+                return 0
+            end
+            push!(visited_peaks, pos)
         end
-        push!(visited_peaks, pos)
         return 1
     end
     
@@ -22,10 +24,13 @@ function compute_trailhead_score(pos, map, visited_peaks)
     return score
 end 
 
-function problem1(map)
-    return [compute_trailhead_score(Tuple(pos), map, Set{Tuple{Int, Int}}()) for pos in findall(==(0), map)] |> sum
+function solve(map, track_peaks_fn)
+    return [compute_trailhead_score(Tuple(pos), map, track_peaks_fn()) for pos in findall(==(0), map)] |> sum
 end
 
+problem1(map) = solve(map, () -> Set{Tuple{Int, Int}}())
+problem2(map) = solve(map, () -> nothing)
 
 map = read_map(ARGS[1])
 println(problem1(map))
+println(problem2(map))
