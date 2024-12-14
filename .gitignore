@@ -1,3 +1,4 @@
 input.txt
 testdata*.txt
 .cookie.txt
+out*.txt
