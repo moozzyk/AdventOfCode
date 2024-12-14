@@ -15,3 +15,7 @@ function safe_get(array, index, default)
 end
 
 multiply_tuple(t) = reduce(*, t)
+
+parse_line(line, regex) = [match.match for match in eachmatch(regex, line)]
+
+parse_line_ints(line, regex) = parse.(Int, parse_line(line, regex))
