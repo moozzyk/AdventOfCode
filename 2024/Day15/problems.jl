@@ -11,57 +11,39 @@ function find_robot(map)
     return filter(p -> map[p...] == '@', Tuple.(CartesianIndices(map)))[1]
 end
 
-function find_empty_spot(pos, dir, map)
-    while true
-        if (map[pos...] == '.')
-            return pos
-        end
-        if (map[pos...] == '#')
-            return nothing
-        end
-        pos = pos .+ dir
+function move(pos, dir, map)
+    new_pos = pos .+ dir
+    if map[new_pos...] == '#'
+        return false
     end
-end
-
-function move(pos, target, dir, map)
-    while true
-        src = target .- dir
-        map[target...] = map[src...]
-        if src == pos
-            map[src...] = '.'
-            break
+    if map[new_pos...] == 'O'
+        if !move(new_pos, dir, map)
+            return false
         end
-        target = src
     end
+    map[new_pos...] = map[pos...]
+    map[pos...] = '.'
+    return true
 end
 
 function move_robot(pos, map, moves)
     dirs = Dict('^'=>UP, 'v'=>DOWN, '<'=>LEFT, '>'=>RIGHT)
     for m in moves
         dir = dirs[m]
-        empty_spot = find_empty_spot(pos, dir, map)
-        if empty_spot != nothing
-            move(pos, empty_spot, dir, map)
+        if move(pos, dir, map)
             pos = pos .+ dir
         end
     end
 end
 
-function compute_distance(pos, map)
-    if map[pos...] == 'O'
-        return (pos[1] - 1) * 100 + pos[2] - 1
-    end
-    return 0
+function compute_gps(map)
+    return sum(t -> t[1] * 100 + t[2] - 101, filter(p -> map[p...] == 'O', Tuple.(CartesianIndices(map))))
 end
 
 function problem1(map, moves)
     robot_pos = find_robot(map)
     move_robot(robot_pos, map, moves)
-    result = 0
-    for pos in Tuple.(CartesianIndices(map))
-        result += compute_distance(pos, map)
-    end
-    return result
+    return compute_gps(map)
 end
 
 (map, moves) = read_input(ARGS[1])
