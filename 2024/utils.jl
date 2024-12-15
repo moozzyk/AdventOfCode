@@ -5,9 +5,14 @@ const RIGHT = (0, 1)
 
 const DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
 
-function read_map(file_name)
-    rows = [collect(line) for line in readlines(file_name)]
-    return permutedims(hcat(rows...))
+function read_map(lines)
+    return permutedims(hcat(collect.(lines)...))
+end
+
+# read_map(file_name) = readlines(file_name) |> read_map
+
+function draw_map(map)
+    println.(join.(eachrow(map)))
 end
 
 function safe_get(array, index, default)
