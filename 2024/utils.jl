@@ -9,7 +9,7 @@ function read_map(lines)
     return permutedims(hcat(collect.(lines)...))
 end
 
-# read_map(file_name) = readlines(file_name) |> read_map
+read_map(file_name::String) = readlines(file_name) |> read_map
 
 function draw_map(map)
     println.(join.(eachrow(map)))
@@ -24,3 +24,6 @@ multiply_tuple(t) = reduce(*, t)
 parse_line(line, regex) = [match.match for match in eachmatch(regex, line)]
 
 parse_line_ints(line, regex) = parse.(Int, parse_line(line, regex))
+
+find_in_map(c, map) = filter(p -> map[p...] == c, Tuple.(CartesianIndices(map)))[1]
+
