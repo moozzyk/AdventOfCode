@@ -5,7 +5,7 @@ const RIGHT = (0, 1)
 
 const DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
 
-function read_map(lines)
+function lines_to_char_map(lines)
     return permutedims(hcat(collect.(lines)...))
 end
 
