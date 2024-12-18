@@ -35,5 +35,15 @@ end
 
 problem1(coordinates) = find_path(coordinates[1:1024])
 
+function problem2(coordinates)
+    for num_coordinates in 1024:length(coordinates)
+        steps = find_path(coordinates[1:num_coordinates])
+        if isnothing(steps)
+            return coordinates[num_coordinates]
+        end
+    end
+end
+
 coordinates = read_coordinates(ARGS[1])
 println(problem1(coordinates))
+println(problem2(coordinates))
