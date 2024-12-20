@@ -9,7 +9,7 @@ function lines_to_char_map(lines)
     return permutedims(hcat(collect.(lines)...))
 end
 
-read_map(file_name::String) = readlines(file_name) |> read_map
+read_map(file_name::String) = readlines(file_name) |> lines_to_char_map
 
 function draw_map(map)
     println.(join.(eachrow(map)))
