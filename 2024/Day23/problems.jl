@@ -38,5 +38,33 @@ function problem1(nodes)
     return has_t.(result) |> sum
 end
 
+function find_maximal_clique(vertices, edges, start_vertex)
+    clique = Set{String}([start_vertex])
+    for candidate in vertices
+        belongs = true
+        for v in clique
+            if !((candidate, v) in edges)
+                belongs = false
+                break
+            end
+        end
+        if belongs
+            push!(clique, candidate)
+            delete!(vertices, candidate)
+        end
+    end
+    return join(sort(collect(clique)), ",")
+end
+
+function problem2(nodes)
+    edges = Set{Tuple{String, String}}()
+    for (from, targets) in nodes
+        union!(edges, Set(map(to -> (from, to), targets)))
+    end
+    passwords = [find_maximal_clique(Set([keys(nodes)...]), edges, v) for v in keys(nodes)]
+    return sort(passwords, by=length) |> last
+end
+
 nodes = read_lan(ARGS[1])
 println(problem1(nodes))
+println(problem2(nodes))
