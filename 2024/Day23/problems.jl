@@ -27,15 +27,10 @@ function find_group(nodes, n1, result)
     end
 end
 
-has_t((n1, n2, n3)) = n1[1] == 't' || n2[1] == 't' || n3[1] == 't'
-
 function problem1(nodes)
     result = Set{Tuple{String, String, String}}()
-    for n in keys(nodes)
-        find_group(nodes, n, result)
-    end
-
-    return has_t.(result) |> sum
+    foreach(n -> find_group(nodes, n, result), keys(nodes))
+    return any.(n -> n[1] == 't', result) |> sum
 end
 
 function find_maximal_clique(vertices, edges, start_vertex)
