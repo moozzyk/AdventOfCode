@@ -14,64 +14,67 @@ DIR_KEYPAD = Dict(
     '<' => (2, 1), 'v' => (2, 2), '>' => (2, 3))
 
 distance(p1, p2) = sum(abs.(p2 .- p1))
-compute_complexity(code, seq) = parse(Int, replace(code, "A" => "" )) * length(seq)
 
-function get_dir_keypad_path(start_key, end_key)
-    valid_positions = values(DIR_KEYPAD)
+compute_complexity(code, seq_length) = parse(Int, replace(code, "A" => "" )) * seq_length
 
-    path = ""
-    pos = DIR_KEYPAD[start_key]
-    end_pos = DIR_KEYPAD[end_key]
-    while pos != end_pos
-        for dir in [DOWN, LEFT, RIGHT, UP]
-            new_pos = pos .+ dir
-            if new_pos in valid_positions && distance(new_pos, end_pos) < distance(pos, end_pos)
-                path *= MOVES[dir]
-                pos = new_pos
-                break
-            end
-        end
-    end
-    return path
-end
-
-function get_dir_keypad_seq(code)
-    sequences = ""
-    key = 'A'
-    for next_key in code
-        sequences *= get_dir_keypad_path(key, next_key) * 'A'
-        key = next_key
-    end
-    return sequences
-end
-
-function find_dir_num_pad_seq(pos, path, idx, seq, results)
-    if (idx > length(seq))
-        push!(results, path)
-        return
-    end
-    target = NUM_KEYPAD[seq[idx]]
-    if pos == target
-        find_dir_num_pad_seq(pos, path * 'A', idx + 1, seq, results)
-        return
+function generate_paths(pos, dst, path, keypad)
+    if pos == dst
+        return [path]
     end
 
-    valid_positions = values(NUM_KEYPAD)
+    result = Vector{String}()
     for dir in [DOWN, LEFT, RIGHT, UP]
         next_pos = pos .+ dir
-        if next_pos in valid_positions && distance(next_pos, target) < distance(pos, target)
-            find_dir_num_pad_seq(next_pos, path * MOVES[dir], idx, seq, results)
+        if next_pos in values(keypad) && distance(next_pos, dst) < distance(pos, dst)
+            append!(result, generate_paths(next_pos, dst, path * MOVES[dir], keypad))
         end
     end
+    return result
 end
 
-function solve(code)
-    num_key_pad_res = Vector{}()
-    find_dir_num_pad_seq((4, 3), "", 1, code, num_key_pad_res)
-    res = [s |> get_dir_keypad_seq |> get_dir_keypad_seq for s in num_key_pad_res]
-    return compute_complexity.(code, res) |> minimum
+function path_generator(keypad)
+    return Dict(
+        (src, dst) => generate_paths(keypad[src], keypad[dst], "", keypad)
+        for src in keys(keypad), dst in keys(keypad))
 end
 
-problem1(codes) = solve.(codes) |> sum
+function generate_all_paths()
+    return merge(path_generator(NUM_KEYPAD), path_generator(DIR_KEYPAD))
+end
+
+function find_shortest_sequence(s, depth, memo)
+    if depth == 0
+        return length(s) + 1 # account for trailing 'A'
+    end
+
+    key = (s, depth)
+    if !haskey(memo, key)
+        s = 'A' * s * 'A'
+        memo[key] = [
+            minimum(find_shortest_sequence.(paths[s[i], s[i + 1]], depth - 1, Ref(memo)))
+            for i in (1:length(s) - 1)
+        ] |> sum
+    end
+
+    return memo[key]
+end
+
+function compute_length(code, depth, memo = Dict{Tuple{String, Int}, Int}())
+    code = 'A' * code
+    return [
+        minimum(find_shortest_sequence.(paths[(code[i], code[i + 1])], depth, Ref(memo)))
+        for i in (1:length(code) -1)
+    ] |> sum
+end
+
+function solve(code, depth)
+    return compute_complexity(code, compute_length(code, depth))
+end
+
+problem1(codes) = solve.(codes, 2) |> sum
+problem2(codes) = solve.(codes, 25) |> sum
+
+paths = generate_all_paths()
 codes = readlines(ARGS[1])
 println(problem1(codes))
+println(problem2(codes))
