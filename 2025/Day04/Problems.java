@@ -1,7 +1,7 @@
 import java.io.*;
 import java.lang.Math;
 import java.util.*;
-import utils.Pair;
+import utils.*;
 
 public class Problems {
     private static boolean isAccessible(char[][] map, int row, int col) {
@@ -50,13 +50,7 @@ public class Problems {
     }
 
     public static void main(String[] args) throws IOException {
-        List<char[]> input = new ArrayList<>();
-        try (var br = new BufferedReader(new FileReader(args[0]))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                input.add(line.toCharArray());
-            }
-        }
+        List<char[]> input =  FileUtils.readLines(args[0]).stream().map(String::toCharArray).toList();
         char[][] map = new char[input.size()][];
         for (var i = 0; i < input.size(); i++) {
             map[i] = input.get(i);
