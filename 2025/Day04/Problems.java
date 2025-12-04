@@ -1,18 +1,9 @@
 import java.io.*;
 import java.lang.Math;
 import java.util.*;
+import utils.Pair;
 
 public class Problems {
-    public static class Pair<T> {
-        public final T first;
-        public final T second;
-
-        public Pair(T first, T second) {
-            this.first = first;
-            this.second = second;
-        }
-    }
-
     private static boolean isAccessible(char[][] map, int row, int col) {
         int numRolls = 0;
         for (int r = row - 1; r < row + 2; r++) {
