@@ -3,49 +3,75 @@ import java.lang.Math;
 import java.util.*;
 
 public class Problems {
-    private static long maxJoltage(int[] bank, int size) {
-        Stack<Integer> stack = new Stack<>();
-        for (int i = 0; i < bank.length; i++) {
-            while (!stack.empty() && bank[i] > stack.peek() && stack.size() + bank.length - i > size) {
-                stack.pop();
-            }
-            if (stack.size() < size) {
-                stack.push(bank[i]);
+    public static class Pair<T> {
+        public final T first;
+        public final T second;
+
+        public Pair(T first, T second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
+    private static boolean isAccessible(char[][] map, int row, int col) {
+        int numRolls = 0;
+        for (int r = row - 1; r < row + 2; r++) {
+            for (int c = col - 1; c < col + 2; c++) {
+                if (r == row && c == col) continue;
+                if (r < 0 || c < 0 || r >= map.length || c >= map[0].length) continue;
+                if (map[r][c] == '@') {
+                    numRolls++;
+                }
             }
         }
+        return numRolls < 4;
+    }
 
-        var result = 0L;
-        var order = 1L;
-        while (!stack.empty()) {
-            result += order * stack.peek();
-            stack.pop();
-            order *= 10;
+    private static List<Pair<Integer>> findAccessiblePaper(char[][] map) {
+        List<Pair<Integer>> accessiblePaper = new ArrayList<>();
+        for (var row = 0; row < map.length; row++) {
+            for (var col = 0; col < map[row].length; col++) {
+                if (map[row][col] == '@' && isAccessible(map, row, col)) {
+                    accessiblePaper.add(new Pair<Integer>(row, col));
+                }
+            }
+        }
+        return accessiblePaper;
+    }
+
+    private static int problem1(char[][] map) {
+        return findAccessiblePaper(map).size();
+    }
+
+    private static int problem2(char[][] map) {
+        int result = 0;
+        while (true) {
+            var accessiblePaper = findAccessiblePaper(map);
+            if (accessiblePaper.size() == 0) {
+                break;
+            }
+            result += accessiblePaper.size();
+            for (var p: accessiblePaper) {
+                map[p.first][p.second] = '.';
+            }
         }
         return result;
     }
 
-    private static long solve(List<int[]> batteries, int size) {
-        return batteries.stream().map(bank -> maxJoltage(bank, size)).mapToLong(Long::longValue).sum();
-    }
-
-    private static long problem1(List<int[]> batteries) {
-        return solve(batteries, 2);
-    }
-
-    private static long problem2(List<int[]> batteries) {
-        return solve(batteries, 12);
-    }
-
     public static void main(String[] args) throws IOException {
-        List<int[]> batteries = new ArrayList<>();
+        List<char[]> input = new ArrayList<>();
         try (var br = new BufferedReader(new FileReader(args[0]))) {
             String line;
             while ((line = br.readLine()) != null) {
-                batteries.add(line.chars().map(c -> c - '0').toArray());
+                input.add(line.toCharArray());
             }
         }
+        char[][] map = new char[input.size()][];
+        for (var i = 0; i < input.size(); i++) {
+            map[i] = input.get(i);
+        }
 
-        System.out.println(problem1(batteries));
-        System.out.println(problem2(batteries));
+        System.out.println(problem1(map));
+        System.out.println(problem2(map));
     }
 }
