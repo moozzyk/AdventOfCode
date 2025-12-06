@@ -19,10 +19,49 @@ public class Problems {
                     System.out.println("Unexpected operation: |" + operation + "|");
                 }
             }
-
             result += acc;
         }
         return result;
+    }
+
+    private static int getNumber(List<String> numbers, int column) {
+        if (column >= numbers.get(0).length()) {
+            return 0;
+        }
+        int n = 0;
+        for (var i = 0; i < numbers.size(); i++) {
+            char c = numbers.get(i).charAt(column);
+            if (c != ' ') {
+                n = n * 10 + (c - '0');
+            }
+        }
+        return n;
+    }
+
+    private static long problem2(List<String> numbers, String operations) {
+        long res = 0;
+        long acc = 0;
+        char operation = ' ';
+        for (var i = 0; i <= operations.length(); i++) {
+            var n = getNumber(numbers, i);
+
+            if (n == 0) {
+                res += acc;
+            } else {
+                if (operations.charAt(i) != ' ') {
+                    operation = operations.charAt(i);
+                    acc = operation == '*' ? 1 : 0;
+                }
+                if (operation == '*') {
+                    acc *= n;
+                } else if (operation == '+') {
+                    acc += n;
+                } else {
+                    System.out.println("Unexpected operation: " + operation);
+                }
+            }
+        }
+        return res;
     }
 
     public static void main(String[] args) throws IOException {
@@ -33,5 +72,6 @@ public class Problems {
         }
         List<String> operations = Arrays.asList(lines.getLast().split("\s+"));
         System.out.println(problem1(numbers, operations));
+        System.out.println(problem2(lines.subList(0, lines.size() - 1), lines.getLast()));
     }
 }
