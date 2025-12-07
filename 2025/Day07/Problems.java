@@ -34,8 +34,28 @@ public class Problems {
         return numSplits;
     }
 
+    private static long problem2(List<String> manifold) {
+        long[][] timelines = new long[manifold.size()][manifold.get(0).length()];
+        timelines[0][findStart(manifold.get(0))] = 1;
+
+        for (var i = 1; i < manifold.size(); i++) {
+            var row = manifold.get(i);
+            for (var j = 0; j < row.length(); j++) {
+                if (manifold.get(i - 1).charAt(j) != '^') {
+                    timelines[i][j] += timelines[i - 1][j];
+                }
+                if (row.charAt(j) == '^') {
+                    timelines[i+1][j-1] += timelines[i][j];
+                    timelines[i+1][j+1] += timelines[i][j];
+                }
+            }
+        }
+        return Arrays.stream(timelines[timelines.length - 1]).sum();
+    }
+
     public static void main(String[] args) throws IOException {
         List<String> lines =  FileUtils.readLines(args[0]);
         System.out.println(problem1(lines));
+        System.out.println(problem2(lines));
     }
 }
