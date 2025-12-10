@@ -61,34 +61,22 @@ public class Problems {
         }
     }
 
-    private static int minPresses(BlinkenMachine machine) {
-        Set<Integer> visited = new HashSet<>();
-        Queue<Pair<Integer>> q = new LinkedList<>();
-        q.add(new Pair<Integer>(0, 0));
-        while (!q.isEmpty()) {
-            var item = q.remove();
-            if (item.second > 20) {
-                System.out.println("Error o kurde");
-                break;
-            }
-            if (visited.contains(item.first)) {
-                continue;
-            }
-
-            if (item.first == machine.lights) {
-                return item.second;
-            }
-
-            for (var buttons : machine.buttons) {
-                q.add(new Pair<Integer>(item.first ^ buttons, item.second + 1));
-            }
+    private static int minPresses(BlinkenMachine machine, int buttonIdx, int state, int presses) {
+        if (state == machine.lights) {
+            return presses;
         }
 
-        return -1;
+        if (buttonIdx  == machine.buttons.size()) {
+            return Integer.MAX_VALUE;
+        }
+
+        return Math.min(
+            minPresses(machine, buttonIdx + 1, state, presses),
+            minPresses(machine, buttonIdx + 1, state ^ machine.buttons.get(buttonIdx), presses + 1));
     }
 
     private static int problem1(List<BlinkenMachine> machines) {
-        return machines.stream().map(Problems::minPresses).mapToInt(Integer::intValue).sum();
+        return machines.stream().map(m -> minPresses(m, 0, 0, 0)).mapToInt(Integer::intValue).sum();
     }
 
     public static void main(String[] args) throws IOException {
