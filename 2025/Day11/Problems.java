@@ -14,20 +14,46 @@ public class Problems {
         return graph;
     }
 
-    private static int visit(String current, Map<String, List<String>> graph) {
-        if (current.equals("out")) {
+    private static long visit(String current, String target, Map<String, List<String>> graph, Map<String, Long> cache) {
+        if (current.equals(target)) {
             return 1;
         }
-        return graph.get(current).stream().map(n -> visit(n, graph)).mapToInt(Integer::valueOf).sum();
+        if (current.equals("out")) {
+            return 0;
+        }
+
+        String key = current + target;
+        if (!cache.containsKey(key)) {
+            long numPaths = graph.get(current).stream()
+                .map(n -> visit(n, target, graph, cache))
+                .mapToLong(Long::valueOf)
+                .sum();
+            cache.put(key, numPaths);
+        }
+        return cache.get(key);
     }
 
-    private static int problem1(Map<String, List<String>> graph) {
-        return visit("you", graph);
+    private static long problem1(Map<String, List<String>> graph) {
+        return visit("you", "out", graph, new HashMap<String, Long>());
+    }
+
+    private static long problem2(Map<String, List<String>> graph) {
+        Map<String, Long> cache = new HashMap<String, Long>();
+        long svrfftdacout =
+            visit("svr", "fft", graph, cache) *
+            visit("fft", "dac", graph, cache) *
+            visit("dac", "out", graph, cache);
+        long svrdacfftout =
+            visit("svr", "dac", graph, cache) *
+            visit("dac", "fft", graph, cache) *
+            visit("fft", "out", graph, cache);
+        return svrfftdacout + svrdacfftout;
     }
 
     public static void main(String[] args) throws IOException {
         List<String> lines =  FileUtils.readLines(args[0]);
         Map<String, List<String>> graph = buildGraph(lines);
         System.out.println(problem1(graph));
+        System.out.println(problem2(graph));
     }
 }
