@@ -103,7 +103,7 @@ public class Problems {
 
     private static int problem1(List<Point3d> points) {
         var distances = getSortedDistances(points);
-        DisjointSet<Point3d> set = new DisjointSet<Point3d>();
+        var set = new DisjointSet<Point3d>();
         for (var i = 0; i < 1000; i++) {
             var d = distances.get(i);
             set.add(d.p1, d.p2);
@@ -117,6 +117,32 @@ public class Problems {
             .reduce(1, (a, b) -> a * b);
     }
 
+    private static boolean hasOneRoot(DisjointSet<Point3d> set) {
+        DisjointSetNode<Point3d> root = null;
+        for (var n: set.nodes.values()) {
+            var currentRoot = set.findRoot(n);
+            if (root == null) {
+                root = currentRoot;
+            } else if (currentRoot != root) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static long problem2(List<Point3d> points) {
+        var distances = getSortedDistances(points);
+        var set = new DisjointSet<Point3d>();
+        for (var d: distances) {
+            set.add(d.p1, d.p2);
+            System.out.printf("%s %s %d\n", d.p1, d.p2, set.nodes.size());
+            if (set.nodes.size() == points.size() && hasOneRoot(set)) {
+                return (long)d.p1.x * (long)d.p2.x;
+            }
+        }
+        return -1;
+    }
+
     public static void main(String[] args) throws IOException {
         List<String> lines =  FileUtils.readLines(args[0]);
         List<Point3d> points = new ArrayList<>();
@@ -125,5 +151,6 @@ public class Problems {
             points.add(new Point3d(Integer.parseInt(t[0]), Integer.parseInt(t[1]), Integer.parseInt(t[2])));
         }
         System.out.println(problem1(points));
+        System.out.println(problem2(points));
     }
 }
