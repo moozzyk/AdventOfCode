@@ -15,7 +15,7 @@ public class DisjointSet<T> {
     private DisjointSetNode<T> getDisjointNode(T v) {
         var n = nodes.get(v);
         if (n == null) {
-            n = new DisjointSetNode(v);
+            n = new DisjointSetNode<T>(v);
             nodes.put(v, n);
         }
         return n;
